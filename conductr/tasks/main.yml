@@ -1,0 +1,85 @@
+---
+- name: Copy ConductR
+  copy: src={{ CONDUCTR_PKG }} dest=/home/ubuntu
+  
+- name: Install ConductR
+  apt: deb=/home/ubuntu/{{ CONDUCTR_PKG }}
+
+- name: Install Conductr-Haproxy
+  apt: deb=/usr/share/conductr/extra/{{ CONDCUTR_HAPROXY_PKG }}
+
+- command: rm /home/ubuntu/{{ CONDUCTR_PKG }}
+
+- name: Setup Python, Pip
+  apt: name={{ item }} state=latest
+  with_items:
+    - python3-pip
+    - python-dev
+    - python-setuptools
+
+- name: Install ConductR CLI
+  command: pip3 install -U conductr-cli
+  become: yes
+  become_method: sudo
+
+- shell: 'echo -Dconductr.ip=$(hostname -i)| sudo tee -a /usr/share/conductr/conf/application.ini'
+  become: yes
+  become_method: sudo
+  notify:
+  - restart conductr
+
+- shell: 'echo --seed {{ groups.seeds_private[0]}}:9004 | sudo tee -a /usr/share/conductr/conf/application.ini'
+  with_items: "{{ groups.seeds_public }}"
+  become: yes
+  become_method: sudo
+  when: item != "{{ inventory_hostname }}"
+  notify:
+  - restart conductr
+
+- shell: 'echo -Dconductr-haproxy.ip=$(hostname -i) | sudo tee -a /usr/share/conductr-haproxy/conf/application.ini'
+  become: yes
+  become_method: sudo
+  notify:
+  - restart conductr-haproxy
+
+- shell: 'echo export CONDUCTR_IP=$(hostname -i) | sudo tee -a /etc/profile'
+  become: yes
+  become_method: sudo
+
+- command: chown conductr-haproxy:conductr-haproxy /etc/haproxy/haproxy.cfg
+  become: yes
+  become_method: sudo
+
+- shell: 'echo "conductr-haproxy ALL=(root) NOPASSWD: /etc/init.d/haproxy reload" | sudo tee -a /etc/sudoers'
+  become: yes
+  become_method: sudo
+ 
+- shell: "echo '$ModLoad imtcp' | sudo tee -a /etc/rsyslog.d/conductr.conf"
+  become: yes
+  become_method: sudo
+
+- shell: "echo '$InputTCPServerRun 514' | sudo tee -a /etc/rsyslog.d/conductr.conf"
+  become: yes
+  become_method: sudo
+  notify:
+  - restart rsyslog
+
+- name: Get instance id
+  get_url: url=http://169.254.169.254/latest/meta-data/instance-id dest=/home/ubuntu/instance-id.txt
+
+- shell: "cat /home/ubuntu/instance-id.txt"
+  register: instanceid
+
+- debug: msg="Instance id -- {{ instanceid.stdout }}"
+
+- name: Register with ELB
+  local_action:
+    module: ec2_elb
+    instance_id: "{{ instanceid.stdout }}"
+    ec2_elbs: "{{ ELB }}"
+    region: "{{ EC2_REGION }}"
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    enable_availability_zone: yes
+    state: present
+    wait: yes
