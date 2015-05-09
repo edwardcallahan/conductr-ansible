@@ -1,30 +1,30 @@
 # Ansible Plays for Typesafe ConductR
 
-These plays and playbooks provision [Typesafe ConductR](https://conductr.typesafe.com) cluster nodes with [Ansible](http://www.ansible.com).
+These plays and playbooks provision [Typesafe ConductR](https://conductr.typesafe.com) cluster nodes in AWS EC2 using [Ansible](http://www.ansible.com).
 
-The playbook build-cluster-ec2.yml launches three instances, each in a different availibility zone. Conductr is installed on the instances and configured to form a cluster. The nodes are registered with a load balancer.
+Use create-network-ec2.yml to setup a new VPC and create your cluster in the new VPC. You only need to provide your access keys and what region to execute in.
+The playbook outputs a vars file for use with the build-cluster-ec.yml.
+
+The playbook build-cluster-ec2.yml launches three instances across two availability zones. ConductR is installed on all instances and configured to form a cluster. The nodes are registered with a load balancer. This playbook can be used with new or existing VPCs.
 
 ## Prerequisites
 
-You'll need a few items in order to use these plays.
+You'll need the following in order to use these playbooks.
 
 * Access Keys and Secrets for an AWS Account with permissions to admin EC2.
-* Ansible installed on a controller host. The faster the controller host's connection to AWS, the faster nodes will launch. Ssh access to a small to medium instance in the same AWS region as your cluster works well. See Ansible Setup below for further details.
-* An AWS Key Pair (PEM file) downloaded to the controller host.
-* A copy of the ConductR deb installation package.
+* Ansible installed on a controller host. The faster the controller host's connection to the choosen EC2 region, the faster nodes will launch. Ssh access to a small to medium instance in the same AWS region as your cluster works well. See Ansible Setup below for further details.
+* An AWS Key Pair (PEM file) downloaded to the Ansible controller host.
+* A copy of the ConductR deb installation package on the Ansible controller host.
 * A copy of this GitHub repo on the Ansible controller host.
+* Ability to accept Oracle's Java License.
 
 ## Setup
 
-ConductR is not provided by this repository. [Contact Typesafe](http://www.typesafe.com/company/contact) to start your ConductR trial.
+ConductR is **not** provided by this repository. [Contact Typesafe](http://www.typesafe.com/company/contact) to start your ConductR trial.
 
-Copy the ConductR deb installation package into the `conductr/files` folder in your local copy of this repo. The installation package will be uploaded from this folder by the ConductR play to each of the EC2 instances for installation. 
+Copy the ConductR deb installation package into the `conductr/files` folder in your local copy of this repo. The installation package will be uploaded from this folder by the ConductR play to each of the EC2 instances for installation.
 
-Log into the AWS Console and select or generate a key pair. We'll need both the path to a local copy of the PEM file and the key pair name use in console to recored in our vars file.
-
-Create the VPC subnets, security groups and load balancer as described in [Install-EC2](http://conductr.typesafe.com/intro/Install-EC2.html). Specify the keypair, load balancer, security-group and subnet names in the `vars/vars.yml`. Or wait for the next playbook to do this for you.
-
-Populate `vars/vars.yml` with the names of your keypair, load balancer, security group and subnets.
+Log into the AWS Console and select or generate a key pair in the region you intend to use. You'll need both the path to a local copy of the PEM file and the key pair name use in console to record in our vars file.
 
 ## Running the Plays
 
@@ -40,18 +40,31 @@ Disable Ansible host key checking so that the play doesn't need you to accept th
 ```bash
 export ANSIBLE_HOST_KEY_CHECKING=False
 ```
-We pass both our vars file and EC2 PEM key to our playbook as command line arguments. The VARS_FILE template must be populated with values from setup, above. The private-key value must be the local path and filename of the keypair that has the key pair name `KEYPAIR` specified in our vars file. For example our key pair may be named `ConductR_Key` in AWS and reside locally as `~/secrets/ConductR.pem`. In which case we would set `KEYPAIR` to `ConductR_Key` and pass `~/secrets/ConductR.pem` as our private-key argument.
 
-All the nodes will get a public ip address so you can ssh into it using the same key using the user name from REMOTE_USER in `vars/main.yml`. 
+Run the create network play specifying what [EC2 region](http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region) you want to execute in as `EC2_REGION`. 
 
 ```bash
-export AWS_ACCESS_KEY_ID='ABC123'
-export AWS_SECRET_ACCESS_KEY='abc123'
-export ANSIBLE_HOST_KEY_CHECKING=False
-ansible-playbook build-cluster-ec2.yml -e "VARS_FILE=vars/vars.yml" --private-key /path/to/{{keypair}}
+ansible-playbook create-network-ec2.yml -e "EC2_REGION=us-east-1"
 ```
 
-Note: These plays use Oracle Java. If you cannot accept the Oracle license, use OpenJDK instead.
+The create network playbook produces a vars file in the `vars` folder named `{{EC2_REGION}}_vars.yml` where {{EC2_REGION}} is the value you passed on the command line.
+You **must** add the name of your key pair to `{{EC2_REGION}}_vars.yml` in order to use it with the build cluster script. Change the "Key Pair Name" of `KEYPAIR: "Key Pair Name"` to that of the key pair name, which may be different than the file name.
+
+We pass both our vars file and EC2 PEM key to our playbook as command line arguments. The VARS_FILE template can be the one created from the create script. There is also a `vars.yml` template you can use instead. The private-key value must be the local path and filename of the keypair that has the key pair name `KEYPAIR` specified in the vars file. For example our key pair may be named `ConductR_Key` in AWS and reside locally as `~/secrets/ConductR.pem`. In which case we would set `KEYPAIR` to `ConductR_Key` and pass `~/secrets/ConductR.pem` as our private-key argument.
+
+All the nodes will be assigned a public ip address so you can ssh into nodes using the specified PEM key with the user name from REMOTE_USER in `vars/main.yml`. 
+
+```bash
+ansible-playbook build-cluster-ec2.yml -e "VARS_FILE=vars/{{EC2_REGION}}_vars.yml" --private-key /path/to/{{keypair}}
+```
+
+## Accessing cluster applications
+
+If all went well you now have a three node ConductR cluster. Any node in the cluster can serve any application deployed on the cluster. The ELB created by the create network playbook adds a listener on port 80 mapped to the Visualizer on port 9999. Start at least one instance of Visualizer in the cluster and access it using the ELB DNS Name in your browser!
+
+### Enabling SSL
+
+Add a HTTPS listener to the load balancer in order to access the cluster securely. You will need to upload a X.509 certificate when creating an HTTPS listener if you haven't already. 
 
 ## Ansible Setup
 
@@ -65,7 +78,6 @@ sudo apt-get install python-setuptools autoconf g++ python2.7-dev
 sudo easy_install pip
 sudo pip install paramiko PyYAML Jinja2 httplib2 boto
 ```
-
 Create a hosts file for Ansible.
 
 ```bash
@@ -73,9 +85,10 @@ sudo mkdir /etc/ansible
 echo -e "[local]\n127.0.0.1" | sudo tee -a /etc/ansible/hosts
 ```
 
-Configure a shell to use ansible from source
+Configure a shell to use Ansible from source
 
 ```bash
 cd ansible
 source ./hacking/env-setup -q
 ```
+
