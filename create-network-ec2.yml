@@ -1,0 +1,138 @@
+---
+- name: Create ConductR EC2 network
+  hosts: localhost
+  connection: local
+  gather_facts: False
+
+  vars:
+    node_sg_name: ConductR Node SG
+
+  tasks:
+    - name: Create VPC
+      local_action:
+        module: ec2_vpc
+        cidr_block: 10.0.0.0/16     
+        resource_tags:
+          Name: "ConductR VPC"
+        region: "{{ EC2_REGION }}"
+        dns_hostnames: yes
+        dns_support: yes
+        internet_gateway: True
+        route_tables:
+          - subnets:
+              - 10.0.1.0/24
+              - 10.0.2.0/24
+              - 10.0.3.0/24
+            routes:
+              - dest: 0.0.0.0/0
+                gw: igw
+        subnets:
+          - cidr: 10.0.1.0/24
+            az: "{{ EC2_REGION }}a"
+            resource_tags:
+               Name: "ConductR {{ EC2_REGION }}a SN"
+          - cidr: 10.0.2.0/24
+            az: "{{ EC2_REGION }}b"
+            resource_tags:
+                Name: "ConductR {{ EC2_REGION }}b SN"
+            # Use 'a' again should region only have 2 AZs
+          - cidr: 10.0.3.0/24
+            az: "{{ EC2_REGION }}a"
+            resource_tags:
+                Name: "ConductR {{ EC2_REGION }}a SN"
+        state: present
+      register: vpc
+
+    - name: Create ELB SG
+      local_action:
+        module: ec2_group
+        name: ConductR ELB SG
+        description: SG for ConductR ELB
+        vpc_id: "{{ vpc.vpc_id }}"
+        region: "{{ vpc.vpc.region }}"
+        state: present
+        rules:
+          - proto: tcp
+            from_port: 80
+            to_port: 80
+            cidr_ip: 0.0.0.0/0
+          - proto: tcp
+            from_port: 443
+            to_port: 443
+            cidr_ip: 0.0.0.0/0
+      register: elb_sg
+
+    - name: Create Nodes SG
+      local_action:
+        module: ec2_group
+        name: "{{ node_sg_name }}"
+        description: SG for ConductR Nodes
+        vpc_id: "{{ vpc.vpc_id }}"
+        region: "{{ vpc.vpc.region }}"
+        rules:
+          - proto: tcp
+            from_port: 22
+            to_port: 22
+            cidr_ip: 0.0.0.0/0
+          # Health
+          - proto: tcp
+            from_port: 9005
+            to_port: 9005
+            group_id: "{{ elb_sg.group_id }}"
+          # Visualizer
+          - proto: tcp
+            from_port: 9999
+            to_port: 9999
+            group_id: "{{ elb_sg.group_id }}"
+          # Akka remoting
+          - proto: tcp
+            from_port: 9004
+            to_port: 9004
+            group_name: "{{ node_sg_name }}"
+          # Bundle transfer
+          - proto: tcp
+            from_port: 9006
+            to_port: 9006
+            group_name: "{{ node_sg_name }}"
+          # Bundle endpoint assignments
+          - proto: tcp
+            from_port: 10000
+            to_port: 10999
+            group_name: "{{ node_sg_name }}"
+        state: present
+      register: node_sg
+
+    - name: Create ELB
+      local_action:
+        module: ec2_elb_lb
+        name: "conductr-elb-{{ EC2_REGION }}"
+        scheme: internet-facing
+        security_group_ids: "{{ elb_sg.group_id }}"
+        state: present
+        cross_az_load_balancing: yes
+        region: "{{ EC2_REGION }}"
+        subnets:
+          - "{{ vpc.subnets[0].id }}"
+          - "{{ vpc.subnets[1].id }}"
+        listeners:
+          # Uploads a cert to use SSL
+          - protocol: http
+            load_balancer_port: 80
+            instance_port: 9999
+        health_check:
+            ping_protocol: http
+            ping_port: 9005
+            ping_path: /members
+            response_timeout: 5
+            interval: 30
+            unhealthy_threshold: 2
+            healthy_threshold: 5
+      register: elb
+
+    - debug: msg="ELB zone name {{ elb.elb.dns_name }}"
+
+    - name: Create vars file
+      template:
+        src: templates/vars.j2
+        dest: "vars/{{ EC2_REGION }}_vars.yml"
+

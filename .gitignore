@@ -1,2 +1,2 @@
 *.deb
-vars/myvars.yml
+vars/*_vars.yml
