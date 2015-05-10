@@ -25,22 +25,16 @@
 - shell: 'echo -Dconductr.ip=$(hostname -i)| sudo tee -a /usr/share/conductr/conf/application.ini'
   become: yes
   become_method: sudo
-  notify:
-  - restart conductr
 
 - shell: 'echo --seed {{ groups.seeds_private[0]}}:9004 | sudo tee -a /usr/share/conductr/conf/application.ini'
   with_items: "{{ groups.seeds_public }}"
   become: yes
   become_method: sudo
   when: item != "{{ inventory_hostname }}"
-  notify:
-  - restart conductr
 
 - shell: 'echo -Dconductr-haproxy.ip=$(hostname -i) | sudo tee -a /usr/share/conductr-haproxy/conf/application.ini'
   become: yes
   become_method: sudo
-  notify:
-  - restart conductr-haproxy
 
 - shell: 'echo export CONDUCTR_IP=$(hostname -i) | sudo tee -a /etc/profile'
   become: yes
@@ -61,8 +55,11 @@
 - shell: "echo '$InputTCPServerRun 514' | sudo tee -a /etc/rsyslog.d/conductr.conf"
   become: yes
   become_method: sudo
-  notify:
-  - restart rsyslog
+
+# Sorry handlers, gotta do these now for ELB
+- service: name=conductr state=restarted
+- service: name=conductr-haproxy state=restarted
+- service: name=rsyslog state=restarted
 
 - name: Get instance id
   get_url: url=http://169.254.169.254/latest/meta-data/instance-id dest=/home/ubuntu/instance-id.txt

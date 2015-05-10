@@ -96,6 +96,4 @@
     - include: haproxy/tasks/main.yml
     - include: conductr/tasks/main.yml
 
-  handlers:
-    - include: handlers/handlers.yml
 

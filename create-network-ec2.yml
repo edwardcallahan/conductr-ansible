@@ -6,6 +6,7 @@
 
   vars:
     node_sg_name: ConductR Node SG
+    EC2_REGION: us-east-1
 
   tasks:
     - name: Create VPC

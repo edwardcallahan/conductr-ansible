@@ -1,5 +1,5 @@
 ---
-IMAGE: "ami-cc3b3ea4"
+IMAGE: "ami-76b2a71e"
 REMOTE_USER: "ubuntu"
 INSTANCE_TYPE: "t2.medium"
 KEYPAIR: "My KeyPair Name"
