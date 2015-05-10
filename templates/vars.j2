@@ -1,6 +1,10 @@
 ---
+# Must be set to the key pair name
+# of the file passed to playbook
 KEYPAIR: "Key Pair Name"
-IMAGE: "ami-cc3b3ea4"
+# This image is Ubuntu 14.04 LTS in us-east-1
+# Must set to region local Ubuntu AMI for other regions
+IMAGE: "ami-76b2a71e"
 REMOTE_USER: "ubuntu"
 INSTANCE_TYPE: "t2.medium"
 EC2_REGION: "{{ EC2_REGION }}"
