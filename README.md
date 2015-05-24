@@ -99,3 +99,10 @@ cd ansible
 source ./hacking/env-setup -q
 ```
 
+## Network Architecture
+
+The architecture created by create-network-ec2.yml utilizes three Availability Zones (AZs) but can be adjusted to more. The image below uses two AZs for simiplicity.
+Multi-region clusters are also possible. EC2 VPC networks do not extend beyond a single region. Therefore regional load balancers and VPN tunnels between node subnets can be leveraged to form a multi-data center architecture with locality using regional CNAMEs.
+
+![alt tag](doc/ConductR-Ansible-EC2-2AZ-Arch.png)
+
