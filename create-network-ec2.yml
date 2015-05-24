@@ -36,11 +36,11 @@
             az: "{{ EC2_REGION }}b"
             resource_tags:
                 Name: "ConductR {{ EC2_REGION }}b SN"
-            # Use 'a' again should region only have 2 AZs
+            # Use 'a' or 'b' again for 2 AZs
           - cidr: 10.0.3.0/24
-            az: "{{ EC2_REGION }}a"
+            az: "{{ EC2_REGION }}c"
             resource_tags:
-                Name: "ConductR {{ EC2_REGION }}a SN"
+                Name: "ConductR {{ EC2_REGION }}c SN"
         state: present
       register: vpc
 
@@ -115,6 +115,7 @@
         subnets:
           - "{{ vpc.subnets[0].id }}"
           - "{{ vpc.subnets[1].id }}"
+          - "{{ vpc.subnets[2].id }}"
         listeners:
           # Uploads a cert to use SSL
           - protocol: http

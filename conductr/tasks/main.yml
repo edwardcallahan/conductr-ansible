@@ -32,6 +32,11 @@
   become_method: sudo
   when: item != "{{ inventory_hostname }}"
 
+- shell: 'echo -Dakka.loglevel=debug | sudo tee -a /usr/share/conductr/conf/application.ini'
+  become: yes
+  become_method: sudo
+  when: "{{ ENABLE_DEBUG }} == true"
+
 - shell: 'echo -Dconductr-haproxy.ip=$(hostname -i) | sudo tee -a /usr/share/conductr-haproxy/conf/application.ini'
   become: yes
   become_method: sudo
@@ -61,6 +66,8 @@
 - service: name=conductr-haproxy state=restarted
 - service: name=rsyslog state=restarted
 
+- debug: var={{ hostvars[inventory_hostname].ansible_all_ipv4_addresses[0] }}
+
 - wait_for: host={{ hostvars[inventory_hostname].ansible_all_ipv4_addresses[0] }}
             port=9005
             state=started
@@ -81,6 +88,5 @@
     region: "{{ EC2_REGION }}"
     aws_access_key: "{{ aws_access_key }}"
     aws_secret_key: "{{ aws_secret_key }}"
-    enable_availability_zone: yes
     state: present
     wait: yes
