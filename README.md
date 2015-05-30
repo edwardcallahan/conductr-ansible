@@ -73,6 +73,16 @@ If all went well you now have a three node ConductR cluster. Any node in the clu
 
 Add a HTTPS listener to the load balancer in order to access the cluster securely. You will need to upload a X.509 certificate when creating an HTTPS listener if you haven't already. 
 
+### Optional Variables
+
+The vars file templates contain variables for controlling optional features and components.
+
+`ENABLE_DEBUG` defaults to "false." If set to "true," `-Dakka.loglevel=debug` is added to ConductR's `conf/application.ini` to enable ConductR debug level logging. 
+
+`INSTALL_DOCKER` defaults to "false." If set to "true," the Docker apt repository is used to install lxc-docker for ConductR non-root usage.
+
+`INSTALL_CLI` defaults to "true." If set to "false," the [ConductR Command Line Interface(CLI)](https://github.com/typesafehub/conductr-cli) will not be installed.
+
 ## Ansible Setup
 
 These plays are being developed out of the current master branch of Ansible. They may or may not work with older packaged versions.
