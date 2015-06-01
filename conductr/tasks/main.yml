@@ -16,11 +16,13 @@
     - python3-pip
     - python-dev
     - python-setuptools
+  when: "{{ INSTALL_CLI }} == true"
 
 - name: Install ConductR CLI
   command: pip3 install -U conductr-cli
   become: yes
   become_method: sudo
+  when: "{{ INSTALL_CLI }} == true"
 
 - shell: 'echo -Dconductr.ip=$(hostname -i)| sudo tee -a /usr/share/conductr/conf/application.ini'
   become: yes
