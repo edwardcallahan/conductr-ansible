@@ -24,6 +24,7 @@
         count: 1
         volumes:
           - device_name: /dev/sda1
+            device_type: "{{VOL_TYPE }}"
             volume_size: "{{ VOL_SIZE }}"
             delete_on_termination: true
         wait: yes
@@ -62,6 +63,7 @@
         count: 1
         volumes:
           - device_name: /dev/sda1
+            device_type: "{{ VOL_TYPE }}"
             volume_size: "{{ VOL_SIZE }}"
             delete_on_termination: true
         wait: yes
