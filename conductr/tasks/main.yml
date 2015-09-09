@@ -63,6 +63,11 @@
   become: yes
   become_method: sudo
 
+- shell: 'echo *.*          @{{ PAPERTRAIL_HOST }}:{{ PAPERTRAIL_PORT }} | sudo tee -a /etc/rsyslog.conf'
+  become: yes
+  become_method: sudo
+  when: "{{ ENABLE_PAPERTRAIL }} == true"
+
 # Sorry handlers, gotta do these now for ELB
 - service: name=conductr state=restarted
 - service: name=conductr-haproxy state=restarted
