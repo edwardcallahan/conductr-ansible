@@ -93,7 +93,7 @@ Setup Ansible from source using git and pip.
 git clone https://github.com/ansible/ansible.git --recursive
 sudo apt-get install python-setuptools autoconf g++ python2.7-dev
 sudo easy_install pip
-sudo pip install paramiko PyYAML Jinja2 httplib2 boto
+sudo pip install paramiko PyYAML Jinja2 httplib2 boto3
 ```
 Create a hosts file for Ansible.
 

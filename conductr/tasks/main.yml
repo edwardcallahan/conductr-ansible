@@ -1,6 +1,6 @@
 ---
 - name: Copy ConductR
-  copy: src={{ CONDUCTR_PKG }} dest=/home/ubuntu
+  copy: src=conductr/files/{{ CONDUCTR_PKG }} dest=/home/ubuntu
   
 - name: Install ConductR
   apt: deb=/home/ubuntu/{{ CONDUCTR_PKG }}
