@@ -1,12 +1,19 @@
 ---
+# Must be set to the key pair name of the file passed to playbook
+KEYPAIR: "Key Pair Name"
+
+# This image is Ubuntu 14.04 LTS in us-east-1
+# Must set to region local Ubuntu AMI for other regions
 IMAGE: "ami-76b2a71e"
+
 REMOTE_USER: "ubuntu"
 INSTANCE_TYPE: "t2.medium"
-KEYPAIR: "My KeyPair Name"
 EC2_REGION: "us-east-1"
 ENABLE_DEBUG: "false"
-INSTALL_DOCKER: "false"
+INSTALL_DOCKER: "true"
 INSTALL_CLI: "true"
+VOL_TYPE: "gp2"
+VOL_SIZE: 30
 NODE_SECURITY_GROUP: "sg-xxxxxxxx"
 AZ_SEED: "us-east-1a"
 SUBNET_SEED: "subnet-xxxxxxxx"
@@ -16,5 +23,5 @@ AZ_SN2: "us-east-1c"
 SUBNET2: "subnet-xxxxxxxx"
 ELB: "My ELB Name"
 TAG_NAME: "ConductR Node"
-CONDUCTR_PKG: "conductr_1.0.2_all.deb"
-CONDCUTR_HAPROXY_PKG: "conductr-haproxy_0.1.0_all.deb"
+CONDUCTR_PKG: "conductr_1.0.11_all.deb"
+CONDCUTR_HAPROXY_PKG: "conductr-haproxy_1.0.11_all.deb"

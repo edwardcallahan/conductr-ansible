@@ -20,7 +20,7 @@ You'll need the following in order to use these playbooks.
 
 ## Setup
 
-ConductR is **not** provided by this repository. [Contact Typesafe](http://www.typesafe.com/company/contact) to start your ConductR trial.
+ConductR is **not** provided by this repository. Visit the [Customer Portal](https://together.typesafe.com/) to download or [Typesafe.com](https://www.typesafe.com/products/conductr) to sign up to evaluate ConductR.
 
 Copy the ConductR deb installation package into the `conductr/files` folder in your local copy of this repo. The installation package will be uploaded from this folder by the ConductR play to each of the EC2 instances for installation.
 
@@ -67,7 +67,12 @@ ansible-playbook build-cluster-ec2.yml -e "VARS_FILE=vars/{{EC2_REGION}}_vars.ym
 
 ## Accessing cluster applications
 
-If all went well you now have a three node ConductR cluster. Any node in the cluster can serve any application deployed on the cluster. The ELB created by the create network playbook adds a listener on port 80 mapped to the Visualizer on port 9999. Start at least one instance of Visualizer in the cluster and access it using the ELB DNS Name in your browser!
+If all went well you now have a three node ConductR cluster. The nodes are registered with the ELB. In order to access applications from the internet you must add a listener to the ELB and ensure port access. To expose bundle endpoints to the world you must:
+* Add a listener to the ELB. The instance port of the listener will be that of the bundle endpoint.
+* Grant the ELB-SG inbound access on the instance port in to the Node-SG
+* If using ELB ports other than 80 and 44, allow the world, `0.0.0.0/0`, inbound access on the ELB port in to the ELB-SG.
+
+The Visualizer sample application has been setup as an example. Start at least one instance of Visualizer in the cluster. Now you can access the Visualizer sample application using port 80 of the ELB DNS Name in your browser. You may delete or remap the Visualizer ELB listeners and corresponding security group access as desired.
 
 ### Enabling SSL
 
@@ -76,6 +81,8 @@ Add a HTTPS listener to the load balancer in order to access the cluster securel
 ### Optional Variables
 
 The vars file templates contain variables for controlling optional features and components.
+
+`VOL_TYPE` and `VOL_SIZE` determine the type and size (GB) of the storage volume attached to each instance. Use `gp2` for General Purpose (SSD) volumes, `io1` for Provisioned IOPS (SSD) volumes, and `standard` for Magnetic volumes.
 
 `ENABLE_DEBUG` defaults to "false." If set to "true," `-Dakka.loglevel=debug` is added to ConductR's `conf/application.ini` to enable ConductR debug level logging. 
 

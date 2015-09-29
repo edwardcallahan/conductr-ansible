@@ -71,6 +71,7 @@
         vpc_id: "{{ vpc.vpc_id }}"
         region: "{{ vpc.vpc.region }}"
         rules:
+          # SSH
           - proto: tcp
             from_port: 22
             to_port: 22
@@ -117,7 +118,8 @@
           - "{{ vpc.subnets[1].id }}"
           - "{{ vpc.subnets[2].id }}"
         listeners:
-          # Uploads a cert to use SSL
+          # Upload a cert to use SSL
+          # Example listener for Visualizer 80 -> 9999
           - protocol: http
             load_balancer_port: 80
             instance_port: 9999
@@ -132,6 +134,10 @@
       register: elb
 
     - debug: msg="ELB zone name {{ elb.elb.dns_name }}"
+
+    - debug: msg="Add listeners to {{ elb.elb.dns_name }} to expose bundle endpoints"
+
+    - debug: msg="Upload x.509 certificate to ELB for SSL endpoints"
 
     - name: Create vars file
       template:
