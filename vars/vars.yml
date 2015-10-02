@@ -2,9 +2,9 @@
 # Must be set to the key pair name of the file passed to playbook
 KEYPAIR: "Key Pair Name"
 
-# This image is Ubuntu 14.04 LTS in us-east-1
+# This image is Ubuntu 14.04 LTS hvm:ebs-ssd in us-east-1
 # Must set to region local Ubuntu AMI for other regions
-IMAGE: "ami-76b2a71e"
+IMAGE: "ami-13fbbc76"
 
 REMOTE_USER: "ubuntu"
 INSTANCE_TYPE: "t2.medium"
