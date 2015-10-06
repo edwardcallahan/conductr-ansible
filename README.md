@@ -74,6 +74,10 @@ If all went well you now have a three node ConductR cluster. The nodes are regis
 
 The Visualizer sample application has been setup as an example. Start at least one instance of Visualizer in the cluster. Now you can access the Visualizer sample application using port 80 of the ELB DNS Name in your browser. You may delete or remap the Visualizer ELB listeners and corresponding security group access as desired.
 
+### Websockets
+
+Applications using websockets require a TCP listener in the ELB instead of a HTTP/HTTPS listener. In this configuration one must [configure proxy protocol support](http://docs.aws.amazon.com/ElasticLoadBalancing/latest/DeveloperGuide/enable-proxy-protocol.html) on the ELB in order to retrieve client connection information.
+
 ### Enabling SSL
 
 Add a HTTPS listener to the load balancer in order to access the cluster securely. You will need to upload a X.509 certificate when creating an HTTPS listener if you haven't already. 
