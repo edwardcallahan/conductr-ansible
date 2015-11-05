@@ -10,10 +10,14 @@
 
 - command: rm /home/ubuntu/{{ CONDUCTR_PKG }}
 
-- name: Setup Python, Pip
+- name: Setup Python
   apt: name={{ item }} state=latest
   with_items:
     - python3-pip
+
+- name: Setup for CLI
+  apt: name={{ item }} state=latest
+  with_items:
     - python-dev
     - python-setuptools
   when: "{{ INSTALL_CLI }} == true"
