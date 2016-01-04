@@ -105,5 +105,6 @@
     - include: java/tasks/main.yml
     - include: docker/tasks/main.yml
       when: "{{ INSTALL_DOCKER }} == true"
+    - include: ntp/tasks/main.yml
     - include: haproxy/tasks/main.yml
     - include: conductr/tasks/main.yml
