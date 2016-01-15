@@ -92,7 +92,14 @@ The vars file templates contain variables for controlling optional features and 
 
 `INSTALL_DOCKER` defaults to "false." If set to "true," the Docker apt repository is used to install lxc-docker for ConductR non-root usage.
 
-`INSTALL_CLI` defaults to "true." If set to "false," the [ConductR Command Line Interface(CLI)](https://github.com/typesafehub/conductr-cli) will not be installed.
+`CONDUCTR_ROLES` is a list and defaults to `web` and `haproxy` if not specified. To append additional role, e.g. `test` specify the following within the vars file:
+
+```
+CONDUCTR_ROLES:
+  - web
+  - haproxy
+  - test
+```
 
 ## Ansible Setup
 

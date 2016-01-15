@@ -1,0 +1,32 @@
+#!/usr/bin/env python
+
+from urllib2 import urlopen
+import json
+from ansible.module_utils.basic import *
+
+def get_members(host, port, protocol_version, role):
+    members_url = 'http://{}:{}{}/members'.format(host, port, protocol_version, role)
+    response = urlopen(members_url)
+    members_json = json.loads(response.read().decode('UTF-8'))
+    return [m['node'].replace('akka.tcp://conductr@', '').split(':')[0]
+            for m in members_json['members']
+            if not role or role in m['roles']]
+
+def main():
+    module = AnsibleModule(
+        argument_spec = dict(
+            conductr_control_host=dict(required=True, type='str'),
+            conductr_control_port=dict(required=False, type='int', default=9005),
+            protocol_version=dict(required=False, type='str', default='/v2'),
+            role=dict(required=False, type='str', default='')
+        )
+    )
+
+    members_address = get_members(module.params['conductr_control_host'],
+                                  module.params['conductr_control_port'],
+                                  module.params['protocol_version'],
+                                  module.params['role'])
+    module.exit_json(changed=True, members=members_address)
+
+if __name__ == '__main__':
+    main()

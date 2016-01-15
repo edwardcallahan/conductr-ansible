@@ -1,12 +1,9 @@
 ---
 - name: Copy ConductR
   copy: src=conductr/files/{{ CONDUCTR_PKG }} dest=/home/ubuntu
-  
+
 - name: Install ConductR
   apt: deb=/home/ubuntu/{{ CONDUCTR_PKG }}
-
-- name: Install Conductr-Haproxy
-  apt: deb=/usr/share/conductr/extra/{{ CONDCUTR_HAPROXY_PKG }}
 
 - command: rm /home/ubuntu/{{ CONDUCTR_PKG }}
 
@@ -20,13 +17,11 @@
   with_items:
     - python-dev
     - python-setuptools
-  when: "{{ INSTALL_CLI }} == true"
 
 - name: Install ConductR CLI
   command: pip3 install -U conductr-cli
   become: yes
   become_method: sudo
-  when: "{{ INSTALL_CLI }} == true"
 
 - shell: 'echo -Dconductr.ip=$(hostname -i)| sudo tee -a /usr/share/conductr/conf/application.ini'
   become: yes
@@ -43,22 +38,23 @@
   become_method: sudo
   when: "{{ ENABLE_DEBUG }} == true"
 
-- shell: 'echo -Dconductr-haproxy.ip=$(hostname -i) | sudo tee -a /usr/share/conductr-haproxy/conf/application.ini'
+- shell: 'echo -Dakka.cluster.roles.{{ item.0 }}={{ item.1 }} | sudo tee -a /usr/share/conductr/conf/application.ini'
   become: yes
   become_method: sudo
+  with_indexed_items: "{{ CONDUCTR_ROLES }}"
 
 - shell: 'echo export CONDUCTR_IP=$(hostname -i) | sudo tee -a /etc/profile'
   become: yes
   become_method: sudo
 
-- command: chown conductr-haproxy:conductr-haproxy /etc/haproxy/haproxy.cfg
+- command: chown conductr:conductr /etc/haproxy/haproxy.cfg
   become: yes
   become_method: sudo
 
-- shell: 'echo "conductr-haproxy ALL=(root) NOPASSWD: /etc/init.d/haproxy reload" | sudo tee -a /etc/sudoers'
+- shell: 'echo "conductr ALL=(root) NOPASSWD: /etc/init.d/haproxy reload" | sudo tee -a /etc/sudoers'
   become: yes
   become_method: sudo
- 
+
 - shell: "echo '$ModLoad imtcp' | sudo tee -a /etc/rsyslog.d/conductr.conf"
   become: yes
   become_method: sudo
@@ -93,7 +89,6 @@
 
 # Sorry handlers, gotta do these now for ELB
 - service: name=conductr state=restarted
-- service: name=conductr-haproxy state=restarted
 - service: name=rsyslog state=restarted
 
 - debug: var={{ hostvars[inventory_hostname].ansible_all_ipv4_addresses[0] }}
