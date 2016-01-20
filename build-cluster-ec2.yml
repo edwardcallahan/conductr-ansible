@@ -93,10 +93,14 @@
   gather_facts: True
   sudo: True
 
-# Get these from env to workaround https://github.com/ansible/ansible/issues/10638
   vars:
+# Get these from env to workaround https://github.com/ansible/ansible/issues/10638
     aws_access_key:  "{{ lookup('env','AWS_ACCESS_KEY_ID') }}"
     aws_secret_key:  "{{ lookup('env','AWS_SECRET_ACCESS_KEY') }}"
+# These are the default ConductR roles - these roles may be overridden within the VARS_FILE
+    CONDUCTR_ROLES:
+      - web
+      - haproxy
 
   vars_files:
     - "{{ VARS_FILE }}"
@@ -108,3 +112,16 @@
     - include: ntp/tasks/main.yml
     - include: haproxy/tasks/main.yml
     - include: conductr/tasks/main.yml
+
+- name: Install ConductR HAProxy from the seed node
+  hosts: seeds_public
+  user: "{{ REMOTE_USER }}"
+  gather_facts: True
+  sudo: True
+
+  vars_files:
+    - "{{ VARS_FILE }}"
+
+  tasks:
+    - include: "bundle/tasks/install-conductr-haproxy.yml"
+
