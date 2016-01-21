@@ -2,6 +2,8 @@
 
 These plays and playbooks provision [Typesafe ConductR](https://conductr.typesafe.com) cluster nodes in AWS EC2 using [Ansible](http://www.ansible.com).
 
+**This version of ConductR Ansible is compatible with ConductR version 1.2.***
+
 Use create-network-ec2.yml to setup a new VPC and create your cluster in the new VPC. You only need to provide your access keys and what region to execute in.
 The playbook outputs a vars file for use with the build-cluster-ec.yml.
 
