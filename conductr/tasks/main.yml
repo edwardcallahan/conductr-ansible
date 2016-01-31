@@ -55,7 +55,7 @@
   become: yes
   become_method: sudo
 
-- shell: 'echo "conductr-haproxy ALL=(root) NOPASSWD: /etc/init.d/haproxy reload" | sudo tee -a /etc/sudoers'
+- shell: 'echo "conductr-haproxy ALL=(root) NOPASSWD: /usr/bin/reloadHAProxy.sh" | sudo tee -a /etc/sudoers'
   become: yes
   become_method: sudo
  
