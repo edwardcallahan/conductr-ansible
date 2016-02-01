@@ -2,11 +2,11 @@
 # Must be set to the key pair name of the file passed to playbook
 KEYPAIR: "Key Pair Name"
 
-# This image is Ubuntu 14.04 LTS amd64 hvm:ebs-ssd in us-east-1
-# Must be changed to region local Ubuntu AMI for all other regions
-IMAGE: "ami-5c207736"
+# CentOS7 2015-09-28 us-east-1
+# Must be changed to region local AMI for all other regions
+IMAGE: "ami-61bbf104"
+REMOTE_USER: "centos"
 
-REMOTE_USER: "ubuntu"
 INSTANCE_TYPE: "t2.medium"
 VOL_TYPE: "gp2"
 VOL_SIZE: 30
@@ -23,5 +23,9 @@ AZ_SN2: "{{ vpc.subnets[2].az }}"
 SUBNET2: "{{ vpc.subnets[2].id }}"
 ELB: "{{ elb.elb.name }}"
 TAG_NAME: "ConductR Node"
-CONDUCTR_PKG: "conductr_1.0.15_all.deb"
-CONDCUTR_HAPROXY_PKG: "conductr-haproxy_1.0.15_all.deb"
+CONDUCTR_PKG: "conductr-1.0.17-systemd.noarch.rpm"
+CONDUCTR_HAPROXY_PKG: "conductr-haproxy-1.0.17-systemd.noarch.rpm"
+download_url: "http://download.oracle.com/otn-pub/java/jdk/8u5-b13/jdk-8u5-linux-x64.tar.gz"
+download_folder: "/opt"
+java_name: "{{download_folder}}/jdk1.8.0_05"
+java_archive: "{{download_folder}}/jdk-8u5-linux-x64.tar.gz"

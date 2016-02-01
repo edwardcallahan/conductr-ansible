@@ -1,10 +1,7 @@
 ---
-- name: Install add-apt-repostory
-  apt: name=software-properties-common state=latest update_cache=yes
-
-- name: Add HAProxy Repository
-  apt_repository: repo='ppa:vbernat/haproxy-1.5'
-
 - name: Install HAProxy
-  apt: name=haproxy state=latest
+  yum: name=haproxy state=latest
 
+- shell: semanage permissive -a haproxy_t
+  become: yes
+  become_method: sudo

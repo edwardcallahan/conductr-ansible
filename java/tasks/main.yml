@@ -1,20 +1,19 @@
 ---
-- name: Install add-apt-repostory
-  apt: name=software-properties-common state=latest update_cache=yes
+- name: Install wget
+  yum: name=wget state=latest
 
-- name: Add Oracle Java Repository
-  apt_repository: repo='ppa:webupd8team/java'
+- name: Download Java
+  command: "wget -q -O {{java_archive}} --no-check-certificate --no-cookies --header 'Cookie: oraclelicense=accept-securebackup-cookie' {{download_url}} creates={{java_archive}}"
 
-- name: Accept Java 8 Licence
-  shell: echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | tee /etc/oracle-java-8-licence-acceptance | /usr/bin/debconf-set-selections
-  args:
-    creates: /etc/oracle-java-8-licence-acceptance
+- name: Unpack archive
+  command: "tar -zxf {{java_archive}} -C {{download_folder}} creates={{java_name}}"
 
-#  Using force to accept packages that cannot be authenticated!
-#  libfontenc1 java-common gsfonts x11-common xfonts-encodings xfonts-utils gsfonts-x11
-- name: Install Oracle Java 8
-  apt: name={{item}} state=latest force=yes
-  with_items:
-    - oracle-java8-installer
-    - ca-certificates
-    - oracle-java8-set-default
+- name: Fix ownership
+  file: state=directory path={{java_name}} owner=root group=root recurse=yes
+
+- name: Make Java available for system
+  command: 'alternatives --install "/usr/bin/java" "java" "{{java_name}}/bin/java" 2000'
+
+- name: Clean up
+  file: state=absent path={{java_archive}}
+

@@ -1,32 +1,36 @@
 ---
+- name: Install  libselinux-python
+  yum: name=libselinux-python state=latest
+
 - name: Copy ConductR
-  copy: src=conductr/files/{{ CONDUCTR_PKG }} dest=/home/ubuntu
+  copy: src=conductr/files/{{ CONDUCTR_PKG }} dest=/home/{{ REMOTE_USER }}
   
 - name: Install ConductR
-  apt: deb=/home/ubuntu/{{ CONDUCTR_PKG }}
+  yum: name=/home/{{ REMOTE_USER }}/{{ CONDUCTR_PKG }}
 
 - name: Install Conductr-Haproxy
-  apt: deb=/usr/share/conductr/extra/{{ CONDCUTR_HAPROXY_PKG }}
+  yum: name=/usr/share/conductr/extra/{{ CONDUCTR_HAPROXY_PKG }}
 
-- command: rm /home/ubuntu/{{ CONDUCTR_PKG }}
+- command: rm /home/{{ REMOTE_USER }}/{{ CONDUCTR_PKG }}
 
-- name: Setup Python
-  apt: name={{ item }} state=latest
-  with_items:
-    - python3-pip
+- name: Install ius
+  yum: name=https://centos7.iuscommunity.org/ius-release.rpm
+
+# Fails under ansible. Update cache?
+#- name: Setup Python
+#  yum: python34u state=latest
 
 - name: Setup for CLI
-  apt: name={{ item }} state=latest
+  yum: name={{ item }} state=latest
   with_items:
-    - python-dev
     - python-setuptools
   when: "{{ INSTALL_CLI }} == true"
 
-- name: Install ConductR CLI
-  command: pip3 install -U conductr-cli
-  become: yes
-  become_method: sudo
-  when: "{{ INSTALL_CLI }} == true"
+#- name: Install ConductR CLI
+#  command: pip3 install -U conductr-cli
+#  become: yes
+#  become_method: sudo
+#  when: "{{ INSTALL_CLI }} == true"
 
 - shell: 'echo -Dconductr.ip=$(hostname -i)| sudo tee -a /usr/share/conductr/conf/application.ini'
   become: yes
@@ -55,7 +59,11 @@
   become: yes
   become_method: sudo
 
-- shell: 'echo "conductr-haproxy ALL=(root) NOPASSWD: /etc/init.d/haproxy reload" | sudo tee -a /etc/sudoers'
+- shell: 'echo "conductr-haproxy ALL=(root) NOPASSWD: /usr/bin/reloadHAProxy.sh" | sudo tee -a /etc/sudoers'
+  become: yes
+  become_method: sudo
+
+- shell: 'echo "Defaults: conductr-haproxy  !requiretty" | sudo tee -a /etc/sudoers'
   become: yes
   become_method: sudo
  
@@ -95,6 +103,7 @@
 - service: name=conductr state=restarted
 - service: name=conductr-haproxy state=restarted
 - service: name=rsyslog state=restarted
+- service: name=haproxy state=restarted
 
 - debug: var={{ hostvars[inventory_hostname].ansible_all_ipv4_addresses[0] }}
 
@@ -103,9 +112,9 @@
             state=started
 
 - name: Get instance id
-  get_url: url=http://169.254.169.254/latest/meta-data/instance-id dest=/home/ubuntu/instance-id.txt
+  get_url: url=http://169.254.169.254/latest/meta-data/instance-id dest=/home/{{ REMOTE_USER }}/instance-id.txt
 
-- shell: "cat /home/ubuntu/instance-id.txt"
+- shell: "cat /home/{{ REMOTE_USER }}/instance-id.txt"
   register: instanceid
 
 - debug: msg="Instance id -- {{ instanceid.stdout }}"
@@ -120,3 +129,4 @@
     aws_secret_key: "{{ aws_secret_key }}"
     state: present
     wait: yes
+

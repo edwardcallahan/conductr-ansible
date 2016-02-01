@@ -1,5 +1,10 @@
 # Ansible Plays for Typesafe ConductR
 
+## CentOS Edition
+### NOT COMPLETE
+Install Python34u and pip3 manually
+
+=======
 These plays and playbooks provision [Typesafe ConductR](https://conductr.typesafe.com) cluster nodes in AWS EC2 using [Ansible](http://www.ansible.com).
 
 Use create-network-ec2.yml to setup a new VPC and create your cluster in the new VPC. You only need to provide your access keys and what region to execute in.
