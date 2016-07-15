@@ -1,1 +1,4 @@
-Put ConductR deb package here
+Put these files here
+- ConductR deb package
+- ConductR Agent deb package
+- HAProxy restart script

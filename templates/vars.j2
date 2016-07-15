@@ -7,6 +7,7 @@ KEYPAIR: "Key Pair Name"
 IMAGE: "ami-5c207736"
 
 REMOTE_USER: "ubuntu"
+REMOTE_WORK_DIR: "/home/ubuntu"
 INSTANCE_TYPE: "t2.medium"
 VOL_TYPE: "gp2"
 VOL_SIZE: 30
@@ -22,12 +23,14 @@ AZ_SN2: "{{ vpc.subnets[2].az }}"
 SUBNET2: "{{ vpc.subnets[2].id }}"
 ELB: "{{ elb.elb.name }}"
 TAG_NAME: "ConductR Node"
-CONDUCTR_PKG: "conductr_1.0.15_all.deb"
-
+CONDUCTR_PKG: "conductr_2.0.0_all.deb"
+CONDUCTR_AGENT_PKG: "conductr-agent_2.0.0_all.deb"
+CONDUCTR_AGENT_WORK_DIR: "/tmp/conductr-agent"
+HAPROXY_RELOAD_SCRIPT: "reloadHAProxy.sh"
+# ConductR 2.*:
 # If you wish to add your own role, uncomment the following
 # In the example below, we are adding a role called `my-role`.
-# The role `web` and `haproxy` must be specified in order as they are required by ConductR.
-# CONDUCTR_ROLES:
+# CONDUCTR_AGENT_ROLES:
 #   - web
 #   - haproxy
 #   - my-role

@@ -94,13 +94,11 @@
   sudo: True
 
   vars:
-# Get these from env to workaround https://github.com/ansible/ansible/issues/10638
-    aws_access_key:  "{{ lookup('env','AWS_ACCESS_KEY_ID') }}"
-    aws_secret_key:  "{{ lookup('env','AWS_SECRET_ACCESS_KEY') }}"
 # These are the default ConductR roles - these roles may be overridden within the VARS_FILE
-    CONDUCTR_ROLES:
+    CONDUCTR_AGENT_ROLES:
       - web
       - haproxy
+      - elasticsearch
 
   vars_files:
     - "{{ VARS_FILE }}"
@@ -111,7 +109,8 @@
       when: "{{ INSTALL_DOCKER }} == true"
     - include: ntp/tasks/main.yml
     - include: haproxy/tasks/main.yml
-    - include: conductr/tasks/main.yml
+    - include: conductr/tasks/install-core.yml
+    - include: conductr/tasks/install-agent.yml
 
 - name: Install ConductR HAProxy from the seed node
   hosts: seeds_public
@@ -125,3 +124,19 @@
   tasks:
     - include: "bundle/tasks/install-conductr-haproxy.yml"
 
+- name: Register ConductR with ELB
+  hosts: nodes
+  user: "{{ REMOTE_USER }}"
+  gather_facts: True
+  sudo: True
+
+  vars:
+# Get these from env to workaround https://github.com/ansible/ansible/issues/10638
+    aws_access_key:  "{{ lookup('env','AWS_ACCESS_KEY_ID') }}"
+    aws_secret_key:  "{{ lookup('env','AWS_SECRET_ACCESS_KEY') }}"
+
+  vars_files:
+    - "{{ VARS_FILE }}"
+
+  tasks:
+    - include: conductr/tasks/register-elb.yml

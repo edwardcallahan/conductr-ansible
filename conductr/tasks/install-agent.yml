@@ -1,0 +1,83 @@
+---
+- name: Copy ConductR Agent
+  copy: src=conductr/files/{{ CONDUCTR_AGENT_PKG }} dest={{ REMOTE_WORK_DIR }}
+
+- name: Install ConductR Agent
+  apt: deb={{ REMOTE_WORK_DIR }}/{{ CONDUCTR_AGENT_PKG }}
+
+- command: rm {{ REMOTE_WORK_DIR }}/{{ CONDUCTR_AGENT_PKG }}
+
+- service: name=conductr-agent state=stopped
+
+- shell: 'echo -Dconductr.agent.ip=$(hostname -i)| sudo tee -a /usr/share/conductr-agent/conf/conductr-agent.ini'
+  become: yes
+  become_method: sudo
+
+- shell: 'echo --core-node {{ groups.seeds_private[0]}}:9004 | sudo tee -a /usr/share/conductr-agent/conf/conductr-agent.ini'
+  with_items: "{{ groups.seeds_public }}"
+  become: yes
+  become_method: sudo
+
+- shell: 'echo -Dakka.loglevel=debug | sudo tee -a /usr/share/conductr-agent/conf/conductr-agent.ini'
+  become: yes
+  become_method: sudo
+  when: "{{ ENABLE_DEBUG }} == true"
+
+- shell: 'echo -Dakka.cluster.roles.{{ item.0 }}={{ item.1 }} | sudo tee -a /usr/share/conductr-agent/conf/conductr-agent.ini'
+  become: yes
+  become_method: sudo
+  with_indexed_items: "{{ CONDUCTR_AGENT_ROLES }}"
+
+- shell: 'echo -Dconductr.agent.storage-dir={{ CONDUCTR_AGENT_WORK_DIR }}/bundles | sudo tee -a /usr/share/conductr-agent/conf/conductr-agent.ini'
+  become: yes
+  become_method: sudo
+
+- shell: 'echo -Dconductr.agent.bundle-pidfile-dir={{ CONDUCTR_AGENT_WORK_DIR }}/bundles/pids | sudo tee -a /usr/share/conductr-agent/conf/conductr-agent.ini'
+  become: yes
+  become_method: sudo
+
+- command: mkdir -p conductr-agent:conductr-agent {{ CONDUCTR_AGENT_WORK_DIR }}/bundles/pids
+  become: yes
+  become_method: sudo
+
+- command: chown -R conductr-agent:conductr-agent {{ CONDUCTR_AGENT_WORK_DIR }}
+  become: yes
+  become_method: sudo
+
+- command: chown conductr-agent:conductr-agent /etc/haproxy/haproxy.cfg
+  become: yes
+  become_method: sudo
+
+- name: Copy HAProxy restart script
+  copy: src=conductr/files/{{ HAPROXY_RELOAD_SCRIPT }} dest=/usr/bin
+
+- command: chmod 0700 /usr/bin/reloadHAProxy.sh
+  become: yes
+  become_method: sudo
+
+- command: chown conductr-agent:conductr-agent /usr/bin/reloadHAProxy.sh
+  become: yes
+  become_method: sudo
+
+- shell: 'echo "conductr-agent ALL=(root) NOPASSWD: /usr/bin/reloadHAProxy.sh" | sudo tee -a /etc/sudoers'
+  become: yes
+  become_method: sudo
+
+- command: mkdir -p /var/lib/elasticsearch /var/log/elasticsearch
+  become: yes
+  become_method: sudo
+
+- command: chown conductr-agent:conductr-agent /var/lib/elasticsearch
+  become: yes
+  become_method: sudo
+
+- command: chown conductr-agent:conductr-agent /var/log/elasticsearch
+  become: yes
+  become_method: sudo
+
+- command: rm -rf /usr/share/conductr-agent/conf/core-nodes
+  become: yes
+  become_method: sudo
+
+- service: name=conductr-agent state=started
+
