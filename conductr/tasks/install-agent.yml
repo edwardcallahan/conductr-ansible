@@ -32,24 +32,13 @@
   become: yes
   become_method: sudo
 
-- shell: 'echo -Dconductr.agent.bundle-pidfile-dir={{ CONDUCTR_AGENT_WORK_DIR }}/bundles/pids | sudo tee -a /usr/share/conductr-agent/conf/conductr-agent.ini'
-  become: yes
-  become_method: sudo
-
-- command: mkdir -p conductr-agent:conductr-agent {{ CONDUCTR_AGENT_WORK_DIR }}/bundles/pids
-  become: yes
-  become_method: sudo
-
-- command: chown -R conductr-agent:conductr-agent {{ CONDUCTR_AGENT_WORK_DIR }}
-  become: yes
-  become_method: sudo
-
 - command: chown conductr-agent:conductr-agent /etc/haproxy/haproxy.cfg
   become: yes
   become_method: sudo
 
-- name: Copy HAProxy restart script
-  copy: src=conductr/files/{{ HAPROXY_RELOAD_SCRIPT }} dest=/usr/bin
+- command: touch /usr/bin/reloadHAProxy.sh
+  become: yes
+  become_method: sudo
 
 - command: chmod 0700 /usr/bin/reloadHAProxy.sh
   become: yes
