@@ -83,8 +83,8 @@
             group_id: "{{ node_sg_name }}"
           # Health
           - proto: tcp
-            from_port: 9005
-            to_port: 9005
+            from_port: 9009
+            to_port: 9009
             group_id: "{{ elb_sg.group_id }}"
           # Visualizer
           - proto: tcp
@@ -145,8 +145,8 @@
             instance_port: 9999
         health_check:
             ping_protocol: http
-            ping_port: 9005
-            ping_path: /members
+            ping_port: 9009
+            ping_path: /status
             response_timeout: 5
             interval: 30
             unhealthy_threshold: 2
