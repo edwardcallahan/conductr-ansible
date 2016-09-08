@@ -76,6 +76,11 @@
             from_port: 22
             to_port: 22
             cidr_ip: 0.0.0.0/0
+          # Agent Remote Port
+          - proto: tcp
+            from_port: 2552
+            to_port: 2552
+            group_id: "{{ node_sg_name }}"
           # Health
           - proto: tcp
             from_port: 9005
@@ -91,10 +96,25 @@
             from_port: 9004
             to_port: 9004
             group_name: "{{ node_sg_name }}"
+          # Control protocol
+          - proto: tcp
+            from_port: 9005
+            to_port: 9005
+            group_name: "{{ node_sg_name }}"
           # Bundle transfer
           - proto: tcp
             from_port: 9006
             to_port: 9006
+            group_name: "{{ node_sg_name }}"
+          # ConductR status server
+          - proto: tcp
+            from_port: 9007
+            to_port: 9007
+            group_name: "{{ node_sg_name }}"
+          # Service locator
+          - proto: tcp
+            from_port: 9008
+            to_port: 9008
             group_name: "{{ node_sg_name }}"
           # Bundle endpoint assignments
           - proto: tcp
