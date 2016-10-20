@@ -2,17 +2,17 @@
 # Must be set to the key pair name of the file passed to playbook
 KEYPAIR: "Key Pair Name"
 
-# This image is Ubuntu 14.04 LTS amd64 hvm:ebs-ssd in us-east-1
+# This image is Ubuntu 16.04 LTS amd64 hvm:ebs-ssd in us-east-1
 # Must be changed to region local Ubuntu AMI for all other regions
-IMAGE: "ami-5c207736"
+IMAGE: "ami-3ab1fa2d"
 
 REMOTE_USER: "ubuntu"
 INSTANCE_TYPE: "t2.medium"
 EC2_REGION: "us-east-1"
-ENABLE_DEBUG: "false"
+ENABLE_DEBUG: "true"
 INSTALL_DOCKER: "true"
 VOL_TYPE: "gp2"
-VOL_SIZE: 30
+VOL_SIZE: 60
 NODE_SECURITY_GROUP: "sg-xxxxxxxx"
 AZ_SEED: "us-east-1a"
 SUBNET_SEED: "subnet-xxxxxxxx"
@@ -22,4 +22,13 @@ AZ_SN2: "us-east-1c"
 SUBNET2: "subnet-xxxxxxxx"
 ELB: "My ELB Name"
 TAG_NAME: "ConductR Node"
-CONDUCTR_PKG: "conductr_1.0.15_all.deb"
+CONDUCTR_PKG: "conductr_2.0.0-beta.4_all.deb"
+CONDUCTR_AGENT_PKG: "conductr-agent_2.0.0-beta.4_all.deb"
+CONDUCTR_AGENT_WORK_DIR: "/tmp/conductr-agent"
+# ConductR 2.*:
+# If you wish to add your own role, uncomment the following
+# In the example below, we are adding a role called `my-role`.
+# CONDUCTR_AGENT_ROLES:
+#   - web
+#   - haproxy
+#   - my-role

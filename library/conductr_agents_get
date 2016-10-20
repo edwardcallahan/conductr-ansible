@@ -4,12 +4,12 @@ from urllib2 import urlopen
 import json
 from ansible.module_utils.basic import *
 
-def get_members(host, port, protocol_version, role):
-    members_url = 'http://{}:{}{}/members'.format(host, port, protocol_version, role)
-    response = urlopen(members_url)
-    members_json = json.loads(response.read().decode('UTF-8'))
-    return [m['node'].replace('akka.tcp://conductr@', '').split(':')[0]
-            for m in members_json['members']
+def get_agents(host, port, protocol_version, role):
+    agents_url = 'http://{}:{}{}/agents'.format(host, port, protocol_version, role)
+    response = urlopen(agents_url)
+    agents_json = json.loads(response.read().decode('UTF-8'))
+    return [m['address'].replace('akka.tcp://conductr-agent@', '').split(':')[0]
+            for m in agents_json
             if not role or role in m['roles']]
 
 def main():
@@ -22,11 +22,11 @@ def main():
         )
     )
 
-    members_address = get_members(module.params['conductr_control_host'],
+    agents_address = get_agents(module.params['conductr_control_host'],
                                   module.params['conductr_control_port'],
                                   module.params['protocol_version'],
                                   module.params['role'])
-    module.exit_json(changed=True, members=members_address)
+    module.exit_json(changed=True, agents=agents_address)
 
 if __name__ == '__main__':
     main()

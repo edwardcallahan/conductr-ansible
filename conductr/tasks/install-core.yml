@@ -1,6 +1,6 @@
 ---
 - name: Copy ConductR
-  copy: src=conductr/files/{{ CONDUCTR_PKG }} dest={{ REMOTE_WORK_DIR }}
+  synchronize: src=conductr/files/{{ CONDUCTR_PKG }} dest={{ REMOTE_WORK_DIR }}
 
 - name: Install ConductR
   apt: deb={{ REMOTE_WORK_DIR }}/{{ CONDUCTR_PKG }}
@@ -18,12 +18,15 @@
     - python-dev
     - python-setuptools
 
+- shell: "hostname -i"
+  register: host_ip
+
 - name: Install ConductR CLI
   command: pip3 install -U conductr-cli
   become: yes
   become_method: sudo
 
-- shell: 'echo -Dconductr.ip=$(hostname -i)| sudo tee -a /usr/share/conductr/conf/conductr.ini'
+- shell: 'echo -Dconductr.ip=$(hostname -i) | sudo tee -a /usr/share/conductr/conf/conductr.ini'
   become: yes
   become_method: sudo
 
@@ -54,8 +57,6 @@
 - service: name=conductr state=restarted
 - service: name=rsyslog state=restarted
 
-- debug: var={{ hostvars[inventory_hostname].ansible_all_ipv4_addresses[0] }}
-
-- wait_for: host={{ hostvars[inventory_hostname].ansible_all_ipv4_addresses[0] }}
+- wait_for: host={{ host_ip.stdout }}
             port=9005
             state=started

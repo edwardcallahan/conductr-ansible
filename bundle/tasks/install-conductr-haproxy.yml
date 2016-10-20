@@ -3,16 +3,18 @@
   find: paths="/usr/share/conductr/extra" patterns="conductr-haproxy-v*.zip"
   register: conductr_haproxy_bundle
 
-- name: Load Bundle - ConductR HAProxy
-  command: "conduct load {{ conductr_haproxy_bundle.files[0].path }}"
-
 - shell: "hostname -i"
   register: host_ip
 
+- name: Load Bundle - ConductR HAProxy
+  command: "conduct load --ip {{ host_ip.stdout }} {{ conductr_haproxy_bundle.files[0].path }}"
+
 - name: Get HAProxy Nodes
-  conductr_members_get: role="haproxy" conductr_control_host="{{ host_ip.stdout }}"
+  conductr_agents_get: role="haproxy" conductr_control_host="{{ host_ip.stdout }}"
   register: haproxy_nodes
 
+- debug: msg=" Scaling conductr-haproxy to {{ haproxy_nodes.agents | length }}"
+
 - name: Run Bundle - ConductR HAProxy
-  command: "conduct run conductr-haproxy --scale {{ haproxy_nodes.members | length }}"
+  command: "conduct run --ip {{ host_ip.stdout}} conductr-haproxy --scale {{ haproxy_nodes.agents | length }}"
 
