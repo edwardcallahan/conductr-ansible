@@ -1,11 +1,11 @@
 ---
-- name: Create ConductR EC2 network
+- name: Create Lightbend EC2 network
   hosts: localhost
   connection: local
   gather_facts: False
 
   vars:
-    node_sg_name: ConductR Node SG
+    node_sg_name: Lightbend Node SG
     EC2_REGION: us-east-1
 
   tasks:
@@ -14,7 +14,7 @@
         module: ec2_vpc
         cidr_block: 10.0.0.0/16     
         resource_tags:
-          Name: "ConductR VPC"
+          Name: "Lightbend Cluster"
         region: "{{ EC2_REGION }}"
         dns_hostnames: yes
         dns_support: yes
@@ -31,24 +31,24 @@
           - cidr: 10.0.1.0/24
             az: "{{ EC2_REGION }}a"
             resource_tags:
-               Name: "ConductR {{ EC2_REGION }}a SN"
+               Name: "Lightbend {{ EC2_REGION }}a SN"
           - cidr: 10.0.2.0/24
             az: "{{ EC2_REGION }}b"
             resource_tags:
-                Name: "ConductR {{ EC2_REGION }}b SN"
+                Name: "Lightbend {{ EC2_REGION }}b SN"
             # Use 'a' or 'b' again for 2 AZs
           - cidr: 10.0.3.0/24
             az: "{{ EC2_REGION }}c"
             resource_tags:
-                Name: "ConductR {{ EC2_REGION }}c SN"
+                Name: "Lightbend {{ EC2_REGION }}c SN"
         state: present
       register: vpc
 
     - name: Create ELB SG
       local_action:
         module: ec2_group
-        name: ConductR ELB SG
-        description: SG for ConductR ELB
+        name: Lightbend ELB SG
+        description: SG for Lightbend ELB
         vpc_id: "{{ vpc.vpc_id }}"
         region: "{{ vpc.vpc.region }}"
         state: present
@@ -63,11 +63,21 @@
             cidr_ip: 0.0.0.0/0
       register: elb_sg
 
+    - name: Tag ELB SG
+      local_action:
+        module: ec2_tag
+        region: "{{ EC2_REGION }}"
+        resource: "{{ elb_sg.group_id }}"
+        state: present
+        tags:
+          Name: Lightbend ELB SG
+
+   # This can fail due to timing. Re-run playbook
     - name: Create Nodes SG
       local_action:
         module: ec2_group
         name: "{{ node_sg_name }}"
-        description: SG for ConductR Nodes
+        description: SG for Lightbend Nodes
         vpc_id: "{{ vpc.vpc_id }}"
         region: "{{ vpc.vpc.region }}"
         rules:
@@ -106,7 +116,7 @@
             from_port: 9006
             to_port: 9006
             group_name: "{{ node_sg_name }}"
-          # ConductR status server
+          # Lightbend status server
           - proto: tcp
             from_port: 9007
             to_port: 9007
@@ -124,10 +134,19 @@
         state: present
       register: node_sg
 
+    - name: Tag Node SG
+      local_action:
+        module: ec2_tag
+        region: "{{ EC2_REGION }}"
+        resource: "{{ node_sg.group_id }}"
+        state: present
+        tags:
+          Name: Lightbend Node SG
+
     - name: Create ELB
       local_action:
         module: ec2_elb_lb
-        name: "conductr-elb-{{ EC2_REGION }}"
+        name: "Lightbend-ELB-{{ EC2_REGION }}"
         scheme: internet-facing
         security_group_ids: "{{ elb_sg.group_id }}"
         state: present
@@ -150,7 +169,7 @@
             response_timeout: 5
             interval: 30
             unhealthy_threshold: 2
-            healthy_threshold: 5
+            healthy_threshold: 3
       register: elb
 
     - debug: msg="ELB zone name {{ elb.elb.dns_name }}"
@@ -164,3 +183,4 @@
         src: templates/vars.j2
         dest: "vars/{{ EC2_REGION }}_vars.yml"
 
+    - debug: msg="Vars file vars/{{ EC2_REGION }}_vars.yml created"

@@ -1,8 +1,9 @@
-# Ansible Plays for Typesafe ConductR
+# Ansible Plays for Lightbend ConductR
 
-These plays and playbooks provision [Typesafe ConductR](https://conductr.typesafe.com) cluster nodes in AWS EC2 using [Ansible](http://www.ansible.com).
+These plays and playbooks provision [Lightbend ConductR](https://conductr.lightbend.com) cluster nodes in AWS EC2 using [Ansible](http://www.ansible.com). ConductR is the project name for Service Orchestration in Lightbend Production Suite.
 
-**This version of ConductR Ansible is compatible with ConductR version 1.2.***
+**This version of ConductR Ansible is compatible with ConductR's Master branch, currently 2.0.x beta.***
+For stable branch versions, use the corresponding branch, i.e. Conductr-Ansible 1.1.x branch for use with ConductR 1.1.x.
 
 Use create-network-ec2.yml to setup a new VPC and create your cluster in the new VPC. You only need to provide your access keys and what region to execute in.
 The playbook outputs a vars file for use with the build-cluster-ec.yml.
@@ -22,9 +23,9 @@ You'll need the following in order to use these playbooks.
 
 ## Setup
 
-ConductR is **not** provided by this repository. Visit the [Customer Portal](https://together.typesafe.com/) to download or [Typesafe.com](https://www.typesafe.com/products/conductr) to sign up to evaluate ConductR.
+ConductR is **not** provided by this repository. Visit the [Customer Portal](https://together.lightbend.com/) to download or [Lightbend.com](https://www.lightbend.com/products/conductr) to sign up to evaluate Lightbend Production Suite.
 
-Copy the ConductR deb installation package into the `conductr/files` folder in your local copy of this repo. The installation package will be uploaded from this folder by the ConductR play to each of the EC2 instances for installation.
+Copy the ConductR deb (conductr_x.y.z_all.deb) *and* the ConductR-Agent deb (conductr-agent_x.y.z_all.deb) installation package into the `conductr/files` folder in your local copy of this repo. The installation package will be uploaded from this folder by the ConductR play to each of the EC2 instances for installation.
 
 Log into the AWS Console and select or generate a key pair in the region you intend to use. You'll need both the path to a local copy of the PEM file and the key pair name use in console to record in our vars file.
 
@@ -55,9 +56,11 @@ Optionally specify what [EC2 region](http://docs.aws.amazon.com/general/latest/g
 ansible-playbook create-network-ec2.yml -e "EC2_REGION=eu-west-1"
 ```
 
+The playbook defaults to availability zones `a`, `b`, and `c`. Change the create-network playbook to use other zones.
+
 The create network playbook produces a vars file in the `vars` folder named `{{EC2_REGION}}_vars.yml` where {{EC2_REGION}} is the region used. You **must** add the name of your key pair to `{{EC2_REGION}}_vars.yml` in order to use it with the build cluster script. Change the "Key Pair Name" of `KEYPAIR: "Key Pair Name"` to that of the key pair name, which may be different than the file name and generally does not end in the .pem file extension.
 
-If you want to execute in a region other than us-east-1, you will also need to change the AMI value for `IMAGE` in your vars file to an Ubuntu image in that region. The AMI listed is the Ubuntu 14.04 LTS HVM EBS boot image published by Canonical for us-east-1. Other versions and types of Ubuntu instances are expected to work. The [Ubuntu AMI Locator](http://cloud-images.ubuntu.com/locator/ec2/) can help you find AMI's for alternative regions and instance types.
+If you want to execute in a region other than us-east-1, you will also need to change the AMI value for `IMAGE` in your vars file to an Ubuntu image in that region. The AMI listed is the Ubuntu 16.04 LTS HVM EBS boot image published by Canonical for us-east-1. Other versions and types of Ubuntu instances are expected to work. The [Ubuntu AMI Locator](http://cloud-images.ubuntu.com/locator/ec2/) can help you find AMI's for alternative regions and instance types.
 
 We pass both our vars file and EC2 PEM key to our playbook as command line arguments. The VARS_FILE template can be the one created from the create script. There is also a `vars.yml` template you can use instead. The private-key value must be the local path and filename of the keypair that has the key pair name `KEYPAIR` specified in the vars file. For example our key pair may be named `ConductR_Key` in AWS and reside locally as `~/secrets/ConductR.pem`. In which case we would set `KEYPAIR` to `ConductR_Key` and pass `~/secrets/ConductR.pem` as our private-key argument.
 
@@ -113,8 +116,11 @@ Setup Ansible from source using git and pip.
 git clone https://github.com/ansible/ansible.git --recursive
 sudo apt-get install python-setuptools autoconf g++ python2.7-dev
 sudo easy_install pip
-sudo pip install paramiko PyYAML Jinja2 httplib2 boto3
+sudo pip install paramiko PyYAML Jinja2 httplib2 boto
 ```
+
+Should `pip` not satisfy requirements, `easy_install` is an alternative python installer. Example: `sudo python -m easy_install pyyaml`.
+
 Create a hosts file for Ansible.
 
 ```bash

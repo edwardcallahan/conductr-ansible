@@ -6,6 +6,9 @@
 
 - debug: msg="Instance id -- {{ instanceid.stdout }}"
 
+- name: Gather facts
+  action: ec2_facts
+
 - name: Register with ELB
   local_action:
     module: ec2_elb
@@ -15,4 +18,3 @@
     aws_access_key: "{{ aws_access_key }}"
     aws_secret_key: "{{ aws_secret_key }}"
     state: present
-    wait: yes
