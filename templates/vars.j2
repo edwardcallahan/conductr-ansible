@@ -12,7 +12,7 @@ INSTANCE_TYPE: "t2.medium"
 VOL_TYPE: "gp2"
 VOL_SIZE: 30
 EC2_REGION: "{{ EC2_REGION }}"
-ENABLE_DEBUG: "false"
+ENABLE_DEBUG: "true"
 INSTALL_DOCKER: "true"
 NODE_SECURITY_GROUP: "{{ node_sg.group_id }}"
 AZ_SEED: "{{ vpc.subnets[0].az }}"

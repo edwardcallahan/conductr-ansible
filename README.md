@@ -2,13 +2,13 @@
 
 These plays and playbooks provision [Lightbend ConductR](https://conductr.lightbend.com) cluster nodes in AWS EC2 using [Ansible](http://www.ansible.com). ConductR is the project name for Service Orchestration in Lightbend Production Suite.
 
-**This version of ConductR Ansible is compatible with ConductR's Master branch, currently 2.0.x beta.***
+**This version of ConductR Ansible is compatible with ConductR's Master branch, currently 2.0.x beta.**
 For stable branch versions, use the corresponding branch, i.e. Conductr-Ansible 1.1.x branch for use with ConductR 1.1.x.
 
 Use create-network-ec2.yml to setup a new VPC and create your cluster in the new VPC. You only need to provide your access keys and what region to execute in.
 The playbook outputs a vars file for use with the build-cluster-ec.yml.
 
-The playbook build-cluster-ec2.yml launches three instances across two availability zones. ConductR is installed on all instances and configured to form a cluster. The nodes are registered with a load balancer. This playbook can be used with new or existing VPCs.
+The playbook build-cluster-ec2.yml launches three instances across three availability zones. ConductR and ConductR-Agent is installed on all instances and configured to form a cluster. The nodes are registered with a load balancer. This playbook can be used with new or existing VPCs.
 
 ## Prerequisites
 
@@ -27,7 +27,7 @@ ConductR is **not** provided by this repository. Visit the [Customer Portal](htt
 
 Copy the ConductR deb (conductr_x.y.z_all.deb) *and* the ConductR-Agent deb (conductr-agent_x.y.z_all.deb) installation package into the `conductr/files` folder in your local copy of this repo. The installation package will be uploaded from this folder by the ConductR play to each of the EC2 instances for installation.
 
-Log into the AWS Console and select or generate a key pair in the region you intend to use. You'll need both the path to a local copy of the PEM file and the key pair name use in console to record in our vars file.
+Log into the AWS Console and select or generate a key pair in the region you intend to use. You'll need both the path to a local copy of the PEM file and the key pair name used in console to record in your vars file.
 
 ## Running the Plays
 
@@ -56,7 +56,7 @@ Optionally specify what [EC2 region](http://docs.aws.amazon.com/general/latest/g
 ansible-playbook create-network-ec2.yml -e "EC2_REGION=eu-west-1"
 ```
 
-The playbook defaults to availability zones `a`, `b`, and `c`. Change the create-network playbook to use other zones.
+The playbook defaults to availability zones `a`, `b`, and `c`. Change the create-network playbook directly to use other or fewer zones.
 
 The create network playbook produces a vars file in the `vars` folder named `{{EC2_REGION}}_vars.yml` where {{EC2_REGION}} is the region used. You **must** add the name of your key pair to `{{EC2_REGION}}_vars.yml` in order to use it with the build cluster script. Change the "Key Pair Name" of `KEYPAIR: "Key Pair Name"` to that of the key pair name, which may be different than the file name and generally does not end in the .pem file extension.
 
@@ -75,7 +75,7 @@ ansible-playbook build-cluster-ec2.yml -e "VARS_FILE=vars/{{EC2_REGION}}_vars.ym
 If all went well you now have a three node ConductR cluster. The nodes are registered with the ELB. In order to access applications from the internet you must add a listener to the ELB and ensure port access. To expose bundle endpoints to the world you must:
 * Add a listener to the ELB. The instance port of the listener will be that of the bundle endpoint.
 * Grant the ELB-SG inbound access on the instance port in to the Node-SG
-* If using ELB ports other than 80 and 44, allow the world, `0.0.0.0/0`, inbound access on the ELB port in to the ELB-SG.
+* If using ELB ports other than 80 and 443, allow the world, `0.0.0.0/0`, inbound access on the ELB port in to the ELB-SG.
 
 The Visualizer sample application has been setup as an example. Start at least one instance of Visualizer in the cluster. Now you can access the Visualizer sample application using port 80 of the ELB DNS Name in your browser. You may delete or remap the Visualizer ELB listeners and corresponding security group access as desired.
 
@@ -93,9 +93,9 @@ The vars file templates contain variables for controlling optional features and 
 
 `VOL_TYPE` and `VOL_SIZE` determine the type and size (GB) of the storage volume attached to each instance. Use `gp2` for General Purpose (SSD) volumes, `io1` for Provisioned IOPS (SSD) volumes, and `standard` for Magnetic volumes.
 
-`ENABLE_DEBUG` defaults to "false." If set to "true," `-Dakka.loglevel=debug` is added to ConductR's `conf/application.ini` to enable ConductR debug level logging. 
+`ENABLE_DEBUG` defaults to "true." When set to "true," `-Dakka.loglevel=debug` is added to ConductR's `conf/application.ini` to enable ConductR debug level logging. Use "false" to disable.
 
-`INSTALL_DOCKER` defaults to "false." If set to "true," the Docker apt repository is used to install lxc-docker for ConductR non-root usage.
+`INSTALL_DOCKER` defaults to "true." When set to "true," the Docker apt repository is used to install lxc-docker for ConductR non-root usage. Use "false" to disable.
 
 `CONDUCTR_ROLES` is a list and defaults to `web` and `haproxy` if not specified. To append additional role, e.g. `test` specify the following within the vars file:
 
