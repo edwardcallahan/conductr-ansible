@@ -3,7 +3,7 @@
   raw: apt-get update -qq && apt-get install -qq python2.7
 
 - name: create softlink for python 2.7
-  raw: ln -s /usr/bin/python2.7 /usr/bin/python
+  raw: rm -f /usr/bin/python && ln -s /usr/bin/python2.7 /usr/bin/python
 
 - name: Ensure /srv/web exists
   file:
