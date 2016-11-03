@@ -22,7 +22,7 @@
   register: host_ip
 
 - name: Install ConductR CLI
-  command: pip3 install -U conductr-cli
+  command: pip3 install -U conductr-cli requests
   become: yes
   become_method: sudo
 
