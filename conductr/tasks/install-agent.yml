@@ -23,7 +23,17 @@
   become_method: sudo
   when: "{{ ENABLE_DEBUG }} == true"
 
-- shell: 'echo -Dconductr.agent.roles.{{ item.0 }}={{ item.1 }} | sudo tee -a /usr/share/conductr-agent/conf/conductr-agent.ini'
+- name: Get AZ
+  get_url: url=http://169.254.169.254/latest/meta-data/placement/availability-zone dest={{ REMOTE_WORK_DIR }}//az.txt
+
+- shell: "cat {{ REMOTE_WORK_DIR }}/az.txt"
+  register: az
+
+- shell: 'echo -Dconductr.agent.roles.0={{ az.stdout }} | sudo tee -a /usr/share/conductr-agent/conf/conductr-agent.ini'
+  become: yes
+  become_method: sudo
+
+- shell: 'echo -Dconductr.agent.roles.{{ item.0 + 1  }}={{ item.1 }} | sudo tee -a /usr/share/conductr-agent/conf/conductr-agent.ini'
   become: yes
   become_method: sudo
   with_indexed_items: "{{ CONDUCTR_AGENT_ROLES }}"
