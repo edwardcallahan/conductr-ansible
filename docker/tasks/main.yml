@@ -12,7 +12,7 @@
 
 - name: Add Docker repository and update apt cache
   apt_repository:
-    repo: deb https://apt.dockerproject.org/repo ubuntu-precise main
+    repo: deb https://apt.dockerproject.org/repo ubuntu-xenial main
     update_cache: yes
     state: present
 
