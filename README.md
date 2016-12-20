@@ -1,14 +1,14 @@
-# Ansible Plays for Lightbend ConductR
+# Ansible Plays for Lightbend ConductR - Three Roles Edition
 
 These plays and playbooks provision [Lightbend ConductR](https://conductr.lightbend.com) cluster nodes in AWS EC2 using [Ansible](http://www.ansible.com). ConductR is the project name for Service Orchestration in Lightbend Production Suite.
 
-**This version of ConductR Ansible is compatible with ConductR's Master branch, currently 2.0.x beta.**
+**This version of ConductR Ansible is compatible with ConductR's Master branch, currently 2.0.x rc.**
 For stable branch versions, use the corresponding branch, i.e. Conductr-Ansible 1.1.x branch for use with ConductR 1.1.x.
 
 Use create-network-ec2.yml to setup a new VPC and create your cluster in the new VPC. You only need to provide your access keys and what region to execute in.
 The playbook outputs a vars file for use with the build-cluster-ec.yml.
 
-The playbook build-cluster-ec2.yml launches three instances across three availability zones. ConductR and ConductR-Agent is installed on all instances and configured to form a cluster. The nodes are registered with a load balancer. This playbook can be used with new or existing VPCs.
+The playbook build-cluster-ec2.yml launches three core nodes, three private agents, two public agents and one template node instances across three availability zones. Core, private agent, public agent and template nodes can be of different AMI, instance and volume size.
 
 ## Prerequisites
 
@@ -95,15 +95,25 @@ The vars file templates contain variables for controlling optional features and 
 
 `ENABLE_DEBUG` defaults to "true." When set to "true," `-Dakka.loglevel=debug` is added to ConductR's `conf/application.ini` to enable ConductR debug level logging. Use "false" to disable.
 
+`ENABLE_ROLES` defaults to "true." When set to "true," `-Dconductr.resource-provider.match-offer-roles=on` is added to ConductR's `conf/application.ini` to enable role matching. Use "false" to disable.
+
 `INSTALL_DOCKER` defaults to "true." When set to "true," the Docker apt repository is used to install lxc-docker for ConductR non-root usage. Use "false" to disable.
 
-`CONDUCTR_ROLES` is a list and defaults to `web` and `haproxy` if not specified. To append additional role, e.g. `test` specify the following within the vars file:
+`CONDUCTR_PRIVATE_ROLES` is a list and defaults to `web` and `elasticsearch` if not specified. To append additional role, e.g. `GPU` specify the following within the vars file:
 
 ```
-CONDUCTR_ROLES:
+CONDUCTR_PRIVATE_ROLES:
   - web
-  - haproxy
+  - elasticsearch
   - test
+```
+
+`CONDUCTR_PUBLIC_ROLES` is a list and defaults to `haproxy` if not specified. To append additional role, e.g. `public` specify the following within the vars file:
+
+```
+CONDUCTR_PUBLIC_ROLES:
+  - haproxy
+  - public
 ```
 
 ## Ansible Setup

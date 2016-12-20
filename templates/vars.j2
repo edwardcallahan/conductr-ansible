@@ -2,18 +2,33 @@
 # Must be set to the key pair name of the file passed to playbook
 KEYPAIR: "Key Pair Name"
 
+REMOTE_USER: "ubuntu"
+EC2_REGION: "us-east-1"
+ENABLE_DEBUG: "true"
+ENABLE_ROLES: "true"
+INSTALL_DOCKER: "true"
+
 # This image is Ubuntu 16.04 LTS amd64 hvm:ebs-ssd in us-east-1
 # Must be changed to region local Ubuntu AMI for all other regions
-IMAGE: "ami-40d28157"
+CORE_IMAGE: "ami-e6d5d2f1"
+PRIVATE_AGENT_IMAGE: "ami-e6d5d2f1"
+PUBLIC_AGENT_IMAGE: "ami-e6d5d2f1"
+TEMPLATE_IMAGE: "ami-e6d5d2f1"
 
-REMOTE_USER: "ubuntu"
-REMOTE_WORK_DIR: "/home/ubuntu"
-INSTANCE_TYPE: "t2.medium"
-VOL_TYPE: "gp2"
-VOL_SIZE: 30
-EC2_REGION: "{{ EC2_REGION }}"
-ENABLE_DEBUG: "true"
-INSTALL_DOCKER: "true"
+CORE_INSTANCE_TYPE: "t2.large"
+PRIVATE_AGENT_INSTANCE_TYPE: "t2.xlarge"
+PUBLIC_AGENT_INSTANCE_TYPE: "t2.large"
+TEMPLATE_INSTANCE_TYPE: "t2.small"
+
+CORE_VOL_TYPE: "gp2"
+CORE_VOL_SIZE: 40
+PUBLIC_AGENT_VOL_TYPE: "gp2"
+PUBLIC_AGENT_VOL_SIZE: 40
+PRIVATE_AGENT_VOL_TYPE: "gp2"
+PRIVATE_AGENT_VOL_SIZE: 260
+TEMPLATE_VOL_TYPE: "gp2"
+TEMPLATE_VOL_SIZE: 40
+
 NODE_SECURITY_GROUP: "{{ node_sg.group_id }}"
 AZ_SEED: "{{ vpc.subnets[0].az }}"
 SUBNET_SEED: "{{ vpc.subnets[0].id }}"
@@ -24,6 +39,7 @@ SUBNET2: "{{ vpc.subnets[2].id }}"
 ELB: "{{ elb.elb.name }}"
 TAG_NAME: "Lightbend ConductR Node"
 CONDUCTR_PKG: "conductr_2.0.0_all.deb"
+CONDUCTR_CORE_WORK_DIR: "/tmp"
 CONDUCTR_AGENT_PKG: "conductr-agent_2.0.0_all.deb"
 CONDUCTR_AGENT_WORK_DIR: "/tmp/conductr-agent"
 # ConductR 2.*:

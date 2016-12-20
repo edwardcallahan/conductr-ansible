@@ -1,0 +1,10 @@
+---
+- shell: "hostname -i"
+  register: host_ip
+
+- name: Load Bundle - Visualizer
+  command: "conduct load --ip {{ host_ip.stdout }} visualizer"
+
+- name: Run Bundle
+  command: "conduct run --ip {{ host_ip.stdout}} visualizer"
+

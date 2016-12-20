@@ -1,0 +1,12 @@
+---
+- command: mkdir -p /var/lib/elasticsearch /var/log/elasticsearch
+  become: yes
+  become_method: sudo
+
+- command: chown conductr-agent:conductr-agent /var/lib/elasticsearch
+  become: yes
+  become_method: sudo
+
+- command: chown conductr-agent:conductr-agent /var/log/elasticsearch
+  become: yes
+  become_method: sudo
