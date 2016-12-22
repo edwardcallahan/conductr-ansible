@@ -196,8 +196,6 @@
   sudo: True
 
   vars:
-    CONDUCTR_SEED_PRIVATE_IP:
-      "{{ seeds_private[0] }}"
 # These are the default ConductR Private Agent roles - these roles may be overridden within the VARS_FILE
     CONDUCTR_PRIVATE_AGENT_ROLES:
       - web
@@ -206,9 +204,6 @@
   vars_files:
     - "{{ VARS_FILE }}"
 
-  vars:
-    CONDUCTR_AGENT_ROLES: "{{ CONDUCTR_PRIVATE_AGENT_ROLES }}"
-
   tasks:
     - include: python/tasks/main.yml
     - include: java/tasks/main.yml
@@ -216,6 +211,9 @@
     - include: docker/tasks/main.yml
       when: "{{ INSTALL_DOCKER }} == true"
     - include: conductr/tasks/install-agent.yml
+      vars:
+          CORE_OBSERVER_PRIVATE_IP: "{{ groups.seeds_private[0] }}"
+          CONDUCTR_AGENT_ROLES: "{{ CONDUCTR_PRIVATE_AGENT_ROLES }}"
     - include: bundle/tasks/config-elasticsearch.yml
 
 
@@ -233,9 +231,6 @@
   vars_files:
     - "{{ VARS_FILE }}"
 
-  vars:
-    CONDUCTR_AGENT_ROLES: "{{ CONDUCTR_PUBLIC_AGENT_ROLES }}"
-
   tasks:
     - include: python/tasks/main.yml
     - include: java/tasks/main.yml
@@ -244,8 +239,10 @@
       when: "{{ INSTALL_DOCKER }} == true"
     - include: haproxy/tasks/main.yml
     - include: conductr/tasks/install-agent.yml
+      vars:
+          CORE_OBSERVER_PRIVATE_IP: "{{ groups.seeds_private[0] }}"
+          CONDUCTR_AGENT_ROLES: "{{ CONDUCTR_PUBLIC_AGENT_ROLES }}"
     - include: bundle/tasks/config-haproxy.yml
-    - include: conductr/tasks/install-agent.yml
 
 - name: Install Bundles from the seed node
   hosts: seeds_public
