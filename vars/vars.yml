@@ -17,6 +17,11 @@ NODE_IMAGE: "ami-9dcfdb8a"
 TEMPLATE_IMAGE: "ami-9dcfdb8a"
 
 REMOTE_USER: "ubuntu"
+
+ADMIN_SG: "sg=xxxxxx"
+BASTION_INSTANCE_TYPE: "t2.large"
+BASTION_VOL_TYPE: "gp2"
+BASTION_VOL_SIZE: 100
 NODE_INSTANCE_TYPE: "t2.xlarge"
 NODE_SG: "sg-xxxxxxxx"
 NODE_VOL_TYPE: "gp2"

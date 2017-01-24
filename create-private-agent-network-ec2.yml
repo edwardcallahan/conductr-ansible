@@ -115,7 +115,10 @@
         tags:
           Name: "{{ ingress_sg.name }}"
 
-   # This can fail due to timing and dependencies. Re-run playbook to complete
+    - pause:
+        prompt: "Prevent timing hazard of dependencies"
+        seconds: 20
+
     - name: Create Public Agent SG
       local_action:
         module: ec2_group
@@ -234,6 +237,48 @@
         state: present
         tags:
           Name: "{{ core_sg.name }}"
+
+    - name: Launch Bastion Node
+      local_action:
+        module: ec2
+        image: "{{ BASTION_IMAGE }}"
+        instance_type: "{{ BASTION_INSTANCE_TYPE }}"
+        keypair: "{{ KEYPAIR }}"
+        region: "{{ EC2_REGION }}"
+        group_id: "{{ ADMIN_SG }}"
+        vpc_subnet_id: "{{ SN_1 }}"
+        assign_public_ip: yes
+        instance_tags:
+          Name: "{{ TAG_NAME }} Bastion"
+          Role: Bastion Node
+          Version: "{{ CONDUCTR_VERSION}}"
+        count: 1
+        volumes:
+          - device_name: /dev/sda1
+            device_type: "{{ BASTION_VOL_TYPE }}"
+            volume_size: "{{ BASTION_VOL_SIZE }}"
+            delete_on_termination: true
+        wait: yes
+      register: ec2
+
+    - name: Add to bastion_public
+      add_host:
+        groupname: "bastion_public"
+        hostname: "{{ ec2.instances[0].public_ip }}"
+
+    - name: Add to bastion_private
+      add_host:
+        groupname: "bastion_private"
+        hostname: "{{ ec2.instances[0].private_ip }}"
+
+    - name: Wait for SSH to come up
+      wait_for:
+        host: "{{ item.instances[0].public_dns_name }}"
+        port: 22
+        delay: 60
+        timeout: 320
+        state: started
+      with_items: "{{ ec2.results }}"
 
     - name: Create ELB
       local_action:
