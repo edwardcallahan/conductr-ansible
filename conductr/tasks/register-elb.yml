@@ -1,19 +1,20 @@
 - name: Get instance id
-  get_url: url=http://169.254.169.254/latest/meta-data/instance-id dest={{ REMOTE_WORK_DIR }}/instance-id.txt
+  get_url: url=http://169.254.169.254/latest/meta-data/instance-id dest={{ CONDUCTR_CORE_WORK_DIR }}/instance-id.txt
 
-- shell: "cat {{ REMOTE_WORK_DIR }}/instance-id.txt"
+- shell: "cat {{ CONDUCTR_CORE_WORK_DIR }}/instance-id.txt"
   register: instanceid
 
 - debug: msg="Instance id -- {{ instanceid.stdout }}"
 
-- name: Gather facts
-  action: ec2_facts
+- pause:
+    prompt: "Add instance to ELB"
+    seconds: 60
 
 - name: Register with ELB
   local_action:
     module: ec2_elb
     instance_id: "{{ instanceid.stdout }}"
-    ec2_elbs: "{{ ELB }}"
+    ec2_elbs: "{{ ELB_NAME }}"
     region: "{{ EC2_REGION }}"
     aws_access_key: "{{ aws_access_key }}"
     aws_secret_key: "{{ aws_secret_key }}"

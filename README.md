@@ -2,13 +2,16 @@
 
 These plays and playbooks provision [Lightbend ConductR](https://conductr.lightbend.com) cluster nodes in AWS EC2 using [Ansible](http://www.ansible.com). ConductR is the project name for Service Orchestration in Lightbend Production Suite.
 
-**This version of ConductR Ansible is compatible with ConductR's Master branch, currently 2.0.x rc.**
+**This version of ConductR Ansible is compatible with ConductR's Master branch, currently 2.0.x ea.**
 For stable branch versions, use the corresponding branch, i.e. Conductr-Ansible 1.1.x branch for use with ConductR 1.1.x.
+
+ConductR can be deployed to a simple 'flat' topology or to a production style private/public topology. For those just getting started, trying it out or otherwise wanting the simple setup should use the flat approach. Only if you want the segmentation of private agents should you use the 'private-agents' version of the playbooks.
 
 Use create-network-ec2.yml to setup a new VPC and create your cluster in the new VPC. You only need to provide your access keys and what region to execute in.
 The playbook outputs a vars file for use with the build-cluster-ec.yml.
 
-The playbook build-cluster-ec2.yml launches three core nodes, three private agents, two public agents and one template node instances across three availability zones. Core, private agent, public agent and template nodes can be of different AMI, instance and volume size.
+The playbook build-cluster-ec2.yml launches four nodes running both the core and the agent processes as well as a template instance for imaging.
+The playbook build-private-agent-cluster-ec2.yml launches three core nodes, three private agents, three public agents and one template node instances across three availability zones. Core, private agent, public agent and template nodes can be of different AMI, instance and volume size.
 
 ## Prerequisites
 
@@ -152,3 +155,6 @@ Multi-region clusters are also possible. EC2 VPC networks do not extend beyond a
 
 ![alt tag](doc/ConductR-Ansible-EC2-2AZ-Arch.png)
 
+
+### Private Agent mode
+Both the VPC creation and cluster building playbooks have 'private-agent' versions. They are used exactly as above but have more amis, subnets. security groups, etc.

@@ -1,11 +1,11 @@
 ---
 - name: Copy ConductR
-  synchronize: src=conductr/files/{{ CONDUCTR_PKG }} dest={{ REMOTE_WORK_DIR }}
+  synchronize: src=conductr/files/{{ CONDUCTR_PKG }} dest={{ CONDUCTR_CORE_WORK_DIR }}
 
 - name: Install ConductR
-  apt: deb={{ REMOTE_WORK_DIR }}/{{ CONDUCTR_PKG }}
+  apt: deb={{ CONDUCTR_CORE_WORK_DIR }}/{{ CONDUCTR_PKG }}
 
-- command: rm {{ REMOTE_WORK_DIR }}/{{ CONDUCTR_PKG }}
+- command: rm {{ CONDUCTR_CORE_WORK_DIR }}/{{ CONDUCTR_PKG }}
 
 - name: Setup Python3 Pip
   apt: name={{ item }} state=latest

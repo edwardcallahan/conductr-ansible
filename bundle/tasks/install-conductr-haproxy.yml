@@ -5,6 +5,10 @@
 - name: Load Bundle - ConductR HAProxy
   command: "conduct load --ip {{ host_ip.stdout }} conductr-haproxy"
 
+- pause:
+    prompt: "Propagation time"
+    seconds: 20
+
 - name: Get HAProxy Nodes
   conductr_agents_get: role="haproxy" conductr_control_host="{{ host_ip.stdout }}"
   register: haproxy_nodes
@@ -12,5 +16,5 @@
 - debug: msg=" Scaling conductr-haproxy to {{ haproxy_nodes.agents | length }}"
 
 - name: Run Bundle - ConductR HAProxy
-  command: "conduct run --ip {{ host_ip.stdout}} conductr-haproxy --scale {{ haproxy_nodes.agents | length }}"
+  command: "conduct run --ip {{ host_ip.stdout }} conductr-haproxy --scale {{ haproxy_nodes.agents | length }}"
 

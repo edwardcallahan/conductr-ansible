@@ -8,25 +8,25 @@
     - "{{ VARS_FILE }}"
 
   tasks:
-    - name: Launch Core Seed
+    - name: Launch Seed Node
       local_action:
         module: ec2
-        image: "{{ CORE_IMAGE }}"
-        instance_type: "{{ CORE_INSTANCE_TYPE }}"
+        image: "{{ NODE_IMAGE }}"
+        instance_type: "{{ NODE_INSTANCE_TYPE }}"
         keypair: "{{ KEYPAIR }}"
         region: "{{ EC2_REGION }}"
-        group_id: "{{ CORE_SECURITY_GROUP }}"
-        vpc_subnet_id: "{{ SUBNET_SEED }}"
+        group_id: "{{ NODE_SG }}"
+        vpc_subnet_id: "{{ SN_1 }}"
         assign_public_ip: yes
         instance_tags:
-          Name: "{{ TAG_NAME }} Core"
-          Role: Core
-          Seed: True
+          Name: "{{ TAG_NAME }}"
+          Role: Seed Node
+          Version: "{{ CONDUCTR_VERSION}}"
         count: 1
         volumes:
           - device_name: /dev/sda1
-            device_type: "{{ CORE_VOL_TYPE }}"
-            volume_size: "{{ CORE_VOL_SIZE }}"
+            device_type: "{{ NODE_VOL_TYPE }}"
+            volume_size: "{{ NODE_VOL_SIZE }}"
             delete_on_termination: true
         wait: yes
       register: ec2
@@ -43,102 +43,52 @@
         groupname: "seeds_private"
         hostname: "{{ ec2.instances[0].private_ip }}"
 
-    - name: Add public ip to nodes
+    - name: Add public ip to nodes_public
       add_host:
-        groupname: "core_nodes"
+        groupname: "nodes_public"
         hostname: "{{ ec2.instances[0].public_ip }}"
 
-    - name: Launch Core Nodes
+    - name: Add public ip to nodes_private
+      add_host:
+        groupname: "nodes_private"
+        hostname: "{{ ec2.instances[0].private_ip }}"
+
+    - name: Launch Nodes
       local_action:
         module: ec2
-        image: "{{ CORE_IMAGE }}"
-        instance_type: "{{ CORE_INSTANCE_TYPE }}"
+        image: "{{ NODE_IMAGE }}"
+        instance_type: "{{ NODE_INSTANCE_TYPE }}"
         keypair: "{{ KEYPAIR }}"
         region: "{{ EC2_REGION }}"
-        group_id: "{{ CORE_SECURITY_GROUP }}"
+        group_id: "{{ NODE_SG }}"
         vpc_subnet_id: "{{ item }}"
         assign_public_ip: yes
         instance_tags:
-          Name: "{{ TAG_NAME }} Core"
-          Role: Core
+          Name: "{{ TAG_NAME }}"
+          Role: Node
+          Version: "{{ CONDUCTR_VERSION}}"
         count: 1
         volumes:
           - device_name: /dev/sda1
-            device_type: "{{ CORE_VOL_TYPE }}"
-            volume_size: "{{ CORE_VOL_SIZE }}"
+            device_type: "{{ NODE_VOL_TYPE }}"
+            volume_size: "{{ NODE_VOL_SIZE }}"
             delete_on_termination: true
         wait: yes
       register: ec2
       with_items:
-        - "{{ SUBNET1 }}"
-        - "{{ SUBNET2 }}"
+        - "{{ SN_2 }}"
+        - "{{ SN_3 }}"
 
-    - name: Add public ip to core_nodes
+    - name: Add public ip to nodes_public
       add_host:
-        groupname: "core_nodes"
+        groupname: "nodes_public"
         hostname: "{{ item.instances[0].public_ip }}"
       with_items: "{{ ec2.results }}"
 
-    - name: Launch Private Agent Nodes
-      local_action:
-        module: ec2
-        image: "{{ PRIVATE_AGENT_IMAGE }}"
-        instance_type: "{{ PRIVATE_AGENT_INSTANCE_TYPE }}"
-        keypair: "{{ KEYPAIR }}"
-        region: "{{ EC2_REGION }}"
-        group_id: "{{ PRIVATE_AGENT_SECURITY_GROUP }}"
-        vpc_subnet_id: "{{ item }}"
-        assign_public_ip: yes # ansible access
-        instance_tags:
-          Name: "{{ TAG_NAME }} Private Agent"
-          Role: Private Agent
-        volumes:
-          - device_name: /dev/sda1
-            device_type: "{{ PRIVATE_AGENT_VOL_TYPE }}"
-            volume_size: "{{ PRIVATE_AGENT_VOL_SIZE }}"
-            delete_on_termination: true
-        wait: yes
-      register: ec2
-      with_items:
-        - "{{ SUBNET1 }}"
-        - "{{ SUBNET2 }}"
-        - "{{ SUBNET_SEED }}"
-
-    - name: Add public ip to private_nodes
+    - name: Add private ip to nodes_private
       add_host:
-        groupname: "private_nodes"
-        hostname: "{{ item.instances[0].public_ip }}"
-      with_items: "{{ ec2.results }}"
-
-    - name: Launch Public Proxy Nodes
-      local_action:
-        module: ec2
-        image: "{{ PUBLIC_AGENT_IMAGE }}"
-        instance_type: "{{ PUBLIC_AGENT_INSTANCE_TYPE }}"
-        keypair: "{{ KEYPAIR }}"
-        region: "{{ EC2_REGION }}"
-        group_id: "{{ PUBLIC_AGENT_SECURITY_GROUP }}"
-        vpc_subnet_id: "{{ item }}"
-        assign_public_ip: yes
-        instance_tags:
-          Name: "{{ TAG_NAME }} Public Agent"
-          Role: Public Agent
-        count: 1
-        volumes:
-          - device_name: /dev/sda1
-            device_type: "{{ PUBLIC_AGENT_VOL_TYPE }}"
-            volume_size: "{{ PUBLIC_AGENT_VOL_SIZE }}"
-            delete_on_termination: true
-        wait: yes
-      register: ec2
-      with_items:
-        - "{{ SUBNET1 }}"
-        - "{{ SUBNET_SEED }}"
-
-    - name: Add public ip to nodes
-      add_host:
-        groupname: "public_nodes"
-        hostname: "{{ item.instances[0].public_ip }}"
+        groupname: "nodes_private"
+        hostname: "{{ item.instances[0].private_ip }}"
       with_items: "{{ ec2.results }}"
 
     - name: Launch Template Nodes
@@ -148,7 +98,7 @@
         instance_type: "{{ TEMPLATE_INSTANCE_TYPE }}"
         keypair: "{{ KEYPAIR }}"
         region: "{{ EC2_REGION }}"
-        group_id: "{{ PRIVATE_AGENT_SECURITY_GROUP }}"
+        group_id: "{{ NODE_SG }}"
         vpc_subnet_id: "{{ item }}"
         assign_public_ip: yes
         instance_tags:
@@ -163,42 +113,34 @@
         wait: yes
       register: ec2
       with_items:
-        - "{{ SUBNET_SEED }}"
+        - "{{ SN_1 }}"
+
+    - name: Save template node ip
+      add_host:
+        groupname: "template_nodes"
+        hostname: "{{ item.instances[0].public_ip }}"
+      with_items: "{{ ec2.results }}"
 
     - name: Wait for SSH to come up
       wait_for:
-       host: "{{ item.instances[0].public_dns_name }}"
-       port: 22
-       delay: 60
-       timeout: 320
-       state: started
+        host: "{{ item.instances[0].public_dns_name }}"
+        port: 22
+        delay: 60
+        timeout: 320
+        state: started
       with_items: "{{ ec2.results }}"
 
-- name: Setup Core Nodes
-  hosts: core_nodes
-  user: "{{ REMOTE_USER }}"
-  gather_facts: False
-  sudo: True
-
-  vars_files:
-    - "{{ VARS_FILE }}"
-
-  tasks:
-    - include: python/tasks/main.yml
-    - include: java/tasks/main.yml
-    - include: ntp/tasks/main.yml
-    - include: conductr/tasks/install-core.yml
-
-- name: Setup Private Nodes
-  hosts: private_nodes
+- name: Setup ConductR
+  hosts: nodes_public
   user: "{{ REMOTE_USER }}"
   gather_facts: False
   sudo: True
 
   vars:
-# These are the default ConductR Private Agent roles - these roles may be overridden within the VARS_FILE
-    CONDUCTR_PRIVATE_AGENT_ROLES:
+# These are the default ConductR roles - these roles may be overridden within the VARS_FILE
+    CONDUCTR_AGENT_ROLES:
       - web
+      - haproxy
       - elasticsearch
 
   vars_files:
@@ -207,44 +149,16 @@
   tasks:
     - include: python/tasks/main.yml
     - include: java/tasks/main.yml
-    - include: ntp/tasks/main.yml
     - include: docker/tasks/main.yml
       when: "{{ INSTALL_DOCKER }} == true"
-    - include: conductr/tasks/install-agent.yml
-      vars:
-          CORE_OBSERVER_PRIVATE_IP: "{{ groups.seeds_private[0] }}"
-          CONDUCTR_AGENT_ROLES: "{{ CONDUCTR_PRIVATE_AGENT_ROLES }}"
-    - include: bundle/tasks/config-elasticsearch.yml
-
-
-- name: Setup Public Agent Nodes
-  hosts: public_nodes
-  user: "{{ REMOTE_USER }}"
-  gather_facts: False
-  sudo: True
-
-  vars:
-# These are the default ConductR Public Agent roles - these roles may be overridden within the VARS_FILE
-    CONDUCTR_PUBLIC_AGENT_ROLES:
-      - haproxy
-
-  vars_files:
-    - "{{ VARS_FILE }}"
-
-  tasks:
-    - include: python/tasks/main.yml
-    - include: java/tasks/main.yml
     - include: ntp/tasks/main.yml
-    - include: docker/tasks/main.yml
-      when: "{{ INSTALL_DOCKER }} == true"
     - include: haproxy/tasks/main.yml
+    - include: conductr/tasks/install-core.yml
     - include: conductr/tasks/install-agent.yml
       vars:
           CORE_OBSERVER_PRIVATE_IP: "{{ groups.seeds_private[0] }}"
-          CONDUCTR_AGENT_ROLES: "{{ CONDUCTR_PUBLIC_AGENT_ROLES }}"
-    - include: bundle/tasks/config-haproxy.yml
 
-- name: Install Bundles from the seed node
+- name: Install ConductR HAProxy from the seed node
   hosts: seeds_public
   user: "{{ REMOTE_USER }}"
   gather_facts: True
@@ -255,12 +169,25 @@
 
   tasks:
     - include: "bundle/tasks/install-conductr-haproxy.yml"
-    - include: "bundle/tasks/install-visualizer.yml"
 
-- name: Register Public Agent Nodes with ELB
-  hosts: public_nodes
+- name: Setup Template Node
+  hosts: template_nodes
   user: "{{ REMOTE_USER }}"
-  gather_facts: True
+  gather_facts: False
+  sudo: True
+
+  vars_files:
+    - "{{ VARS_FILE }}"
+
+  tasks:
+    - include: python/tasks/main.yml
+    - include: java/tasks/main.yml
+    - include: ntp/tasks/main.yml
+
+- name: Register ConductR with ELB
+  hosts: nodes_public
+  user: "{{ REMOTE_USER }}"
+  gather_facts: False
   sudo: True
 
   vars:
