@@ -168,7 +168,10 @@
     - "{{ VARS_FILE }}"
 
   tasks:
+    - include: "bundle/tasks/config-elasticsearch.yml"
+    - include: "bundle/tasks/config-haproxy.yml"
     - include: "bundle/tasks/install-conductr-haproxy.yml"
+    - include: "bundle/tasks/install-visualizer.yml"
 
 - name: Setup Template Node
   hosts: template_nodes

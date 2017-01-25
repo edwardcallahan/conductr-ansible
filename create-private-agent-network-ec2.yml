@@ -16,7 +16,7 @@
     - name: Create VPC
       local_action:
         module: ec2_vpc
-        cidr_block: 10.0.0.0/16     
+        cidr_block: 10.0.0.0/16
         resource_tags:
           Name: "Lightbend ConductR VPC"
         region: "{{ EC2_REGION }}"
@@ -25,38 +25,38 @@
         internet_gateway: True
         route_tables:
           - subnets:
-              - 10.1.0.0/16
-              - 10.2.0.0/16
-              - 10.3.0.0/16
-              - 10.4.0.0/16
-              - 10.5.0.0/16
-              - 10.6.0.0/16
+              - 10.0.1.0/24
+              - 10.0.2.0/24
+              - 10.0.3.0/24
+              - 10.0.4.0/24
+              - 10.0.5.0/24
+              - 10.0.6.0/24
             routes:
               - dest: 0.0.0.0/0
                 gw: igw
         subnets:
-          - cidr: 10.1.0.0/16
+          - cidr: 10.0.1.0/24
             az: "{{ EC2_REGION }}a"
             resource_tags:
                Name: "Lightbend {{ EC2_REGION }}-A Public SN"
-          - cidr: 10.2.0.0/16
+          - cidr: 10.0.2.0/24
             az: "{{ EC2_REGION }}a"
             resource_tags:
                 Name: "Lightbend {{ EC2_REGION }}-A Private SN"
-          - cidr: 10.3.0.0/16
+          - cidr: 10.0.3.0/24
             az: "{{ EC2_REGION }}b"
             resource_tags:
                 Name: "Lightbend {{ EC2_REGION }}-B Public SN"
-          - cidr: 10.4.0.0/16
+          - cidr: 10.0.4.0/24
             az: "{{ EC2_REGION }}b"
             resource_tags:
                Name: "Lightbend {{ EC2_REGION }}-B Private SN"
             # Use 'a' or 'b' again for 2 AZs
-          - cidr: 10.5.0.0/16
+          - cidr: 10.0.5.0/24
             az: "{{ EC2_REGION }}c"
             resource_tags:
                 Name: "Lightbend {{ EC2_REGION }}-C Public SN"
-          - cidr: 10.6.0.0/16
+          - cidr: 10.0.6.0/24
             az: "{{ EC2_REGION }}c"
             resource_tags:
                 Name: "Lightbend {{ EC2_REGION }}-C Private SN"
@@ -66,7 +66,7 @@
     - name: Create Admin SG
       local_action:
         module: ec2_group
-        name: "{{ admin_sg.name }}"
+        name: Lightbend Admin SG
         description: Admin Access to Lightbend Cluster
         vpc_id: "{{ vpc.vpc_id }}"
         region: "{{ vpc.vpc.region }}"
@@ -85,12 +85,12 @@
         resource: "{{ admin_sg.group_id }}"
         state: present
         tags:
-          Name: "{{ admin_sg.name }}"
+          Name: Lightbend Admin SG
 
     - name: Create Ingress SG
       local_action:
         module: ec2_group
-        name: "{{ ingress_sg.name }}"
+        name: Lightbend Ingress SG
         description: Ingress SG to Lightbend Cluster
         vpc_id: "{{ vpc.vpc_id }}"
         region: "{{ vpc.vpc.region }}"
@@ -113,7 +113,7 @@
         resource: "{{ ingress_sg.group_id }}"
         state: present
         tags:
-          Name: "{{ ingress_sg.name }}"
+          Name: Lightbend Ingress SG
 
     - pause:
         prompt: "Prevent timing hazard of dependencies"
@@ -122,7 +122,7 @@
     - name: Create Public Agent SG
       local_action:
         module: ec2_group
-        name: "{{ public_agent_sg_name }}"
+        name: Lightbend Public Agent SG
         description: SG for ConductR Public Agents
         vpc_id: "{{ vpc.vpc_id }}"
         region: "{{ vpc.vpc.region }}"
@@ -131,17 +131,17 @@
           - proto: tcp
             from_port: 22
             to_port: 22
-            group_id: "{{ admin_sg_name }}"
+            group_id: "{{ admin_sg.group_id}}"
           # Agent Remote Port
           - proto: tcp
             from_port: 2552
             to_port: 2552
-            group_id: "{{ core_sg_name }}"
+            group_id: "{{ core_sg.group_id }}"
           # HTTP application endpoints
           - proto: tcp
             from_port: 9000
             to_port: 9000
-            group_id: "{{ ingres_sg.group_id }}"
+            group_id: "{{ ingress_sg.group_id }}"
           # ELB health check
           - proto: tcp
             from_port: 9009
@@ -162,12 +162,12 @@
         resource: "{{ public_agent_sg.group_id }}"
         state: present
         tags:
-          Name: "{{ public_agent_sg.name }}"
+          Name:  Lightbend Public Agent SG
 
     - name: Create Private Agent SG
       local_action:
         module: ec2_group
-        name: "{{ private_agent_sg.name }}"
+        name: Lightbend Private Agent SG
         description: "{{ private_agent_sg.name }}"
         vpc_id: "{{ vpc.vpc_id }}"
         region: "{{ vpc.vpc.region }}"
@@ -176,7 +176,7 @@
           - proto: tcp
             from_port: 22
             to_port: 22
-            group_id: "{{ admin_sg_name }}"
+            group_id: "{{ admin_sg.group_id }}"
           # Akka Remoting from Core to Agent
           - proto: tcp
             from_port: 2552
@@ -197,7 +197,7 @@
         resource: "{{ core_sg.group_id }}"
         state: present
         tags:
-          Name: "{{ private_agent_sg.name }}"
+          Name: Lightbend Private Agent SG
 
     - name: Create Core Nodes SG
       local_action:
@@ -211,7 +211,7 @@
           - proto: tcp
             from_port: 22
             to_port: 22
-            group_id: "{{ admin_sg_name }}"
+            group_id: "{{ admin_sg.group_id }}"
           # Akka Remoting, Control Protocol, Bundle Stream Server,
           # Status Server and Service Locator
           # From Public Agent to Core
@@ -236,7 +236,7 @@
         resource: "{{ core_sg.group_id }}"
         state: present
         tags:
-          Name: "{{ core_sg.name }}"
+          Name: Lightbend Core Node SG
 
     - name: Launch Bastion Node
       local_action:
