@@ -13,14 +13,11 @@ REMOTE_USER: "ubuntu"
 
 # This image is Ubuntu 16.04 LTS amd64 hvm:ebs-ssd in us-east-1
 # Must be changed to region local Ubuntu AMI for all other regions
-CORE_IMAGE: "ami-9dcfdb8a"
-PRIVATE_AGENT_IMAGE: "ami-9dcfdb8a"
-PUBLIC_AGENT_IMAGE: "ami-9dcfdb8a"
-TEMPLATE_IMAGE: "ami-9dcfdb8a"
+CORE_IMAGE: "ami-6edd3078"
+PRIVATE_AGENT_IMAGE: "ami-6edd3078"
+PUBLIC_AGENT_IMAGE: "ami-6edd3078"
+TEMPLATE_IMAGE: "ami-6edd3078"
 
-BASTION_INSTANCE_TYPE: "t2.large"
-BASTION_VOL_TYPE: "gp2"
-BASTION_VOL_SIZE: 100
 CORE_INSTANCE_TYPE: "t2.large"
 CORE_VOL_TYPE: "gp2"
 CORE_VOL_SIZE: 100
@@ -34,13 +31,11 @@ TEMPLATE_INSTANCE_TYPE: "t2.small"
 TEMPLATE_VOL_TYPE: "gp2"
 TEMPLATE_VOL_SIZE: 10
 
-ADMIN_SG: "sg-xxxxxxxx"
 CORE_SG: "sg-xxxxxxxx"
 INGRESS_SG: "sg-xxxxxxxx"
 PRIVATE_AGENT_SG: "sg-xxxxxxxx"
 PUBLIC_AGENT_SG: "sg-xxxxxxxx"
 
-ADMIN_SG: "{{ admin_sg.group_id }}"
 CORE_SG: "{{ admin_sg.group_id }}"
 INGRESS_SG: "{{ admin_sg.group_id }}"
 PUBLIC_AGENT_SG: "{{ admin_sg.group_id }}"

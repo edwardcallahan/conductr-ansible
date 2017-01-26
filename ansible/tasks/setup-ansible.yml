@@ -1,0 +1,21 @@
+---
+- name: Install git
+  apt: name=git state=latest update_cache=yes
+
+- command: git clone https://github.com/ansible/ansible.git --recursive
+
+- command: easy_install pip
+  become: yes
+  become_method: sudo
+
+- command: pip install paramiko PyYAML Jinja2 httplib2 boto
+  become: yes
+  become_method: sudo
+
+- command: mkdir -p /etc/ansible
+  become: yes
+  become_method: sudo
+
+- shell: 'echo -e "[local]\n127.0.0.1" | sudo tee -a /etc/ansible/hosts'
+  become: yes
+  become_method: sudo

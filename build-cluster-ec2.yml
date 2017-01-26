@@ -173,6 +173,10 @@
     - include: "bundle/tasks/install-conductr-haproxy.yml"
     - include: "bundle/tasks/install-visualizer.yml"
 
+    - pause:
+      prompt: "Allowing instances to become healthy. Abort to not launch template instance, requiring manual registration w/ELB"
+      seconds: 90
+
 - name: Setup Template Node
   hosts: template_nodes
   user: "{{ REMOTE_USER }}"

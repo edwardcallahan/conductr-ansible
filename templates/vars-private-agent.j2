@@ -18,10 +18,6 @@ PRIVATE_AGENT_IMAGE: "ami-6edd3078"
 PUBLIC_AGENT_IMAGE: "ami-6edd3078"
 TEMPLATE_IMAGE: "ami-6edd3078"
 
-BASTION_INSTANCE_TYPE: "t2.large"
-BASTION_VOL_TYPE: "gp2"
-BASTION_VOL_SIZE: 100
-CORE_INSTANCE_TYPE: "t2.large"
 CORE_VOL_TYPE: "gp2"
 CORE_VOL_SIZE: 100
 PRIVATE_AGENT_INSTANCE_TYPE: "t2.xlarge"
@@ -34,7 +30,6 @@ TEMPLATE_INSTANCE_TYPE: "t2.small"
 TEMPLATE_VOL_TYPE: "gp2"
 TEMPLATE_VOL_SIZE: 10
 
-ADMIN_SG: "{{ admin_sg.group_id }}"
 CORE_SG: "{{ core_sg.group_id }}"
 INGRESS_SG: "{{ ingress_sg.group_id }}"
 PRIVATE_AGENT_SG: "{{ private_sg.group_id }}"
