@@ -1,0 +1,19 @@
+- command: chown conductr-agent:conductr-agent /etc/haproxy/haproxy.cfg
+  become: yes
+  become_method: sudo
+
+- command: touch /usr/bin/reloadHAProxy.sh
+  become: yes
+  become_method: sudo
+
+- command: chmod 0700 /usr/bin/reloadHAProxy.sh
+  become: yes
+  become_method: sudo
+
+- command: chown conductr-agent:conductr-agent /usr/bin/reloadHAProxy.sh
+  become: yes
+  become_method: sudo
+
+- shell: 'echo "conductr-agent ALL=(root) NOPASSWD: /usr/bin/reloadHAProxy.sh" | sudo tee -a /etc/sudoers'
+  become: yes
+  become_method: sudo

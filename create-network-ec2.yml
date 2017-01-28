@@ -14,7 +14,7 @@
         module: ec2_vpc
         cidr_block: 10.0.0.0/16     
         resource_tags:
-          Name: "Lightbend Cluster"
+          Name: "Lightbend Cluster VPC"
         region: "{{ EC2_REGION }}"
         dns_hostnames: yes
         dns_support: yes
@@ -44,11 +44,11 @@
         state: present
       register: vpc
 
-    - name: Create ELB SG
+    - name: Create Ingress SG
       local_action:
         module: ec2_group
-        name: Lightbend ELB SG
-        description: SG for Lightbend ELB
+        name: Lightbend Ingress SG
+        description: Ingress SG to Lightbend Cluster
         vpc_id: "{{ vpc.vpc_id }}"
         region: "{{ vpc.vpc.region }}"
         state: present
@@ -61,13 +61,13 @@
             from_port: 443
             to_port: 443
             cidr_ip: 0.0.0.0/0
-      register: elb_sg
+      register: ingress_sg
 
-    - name: Tag ELB SG
+    - name: Tag Ingress SG
       local_action:
         module: ec2_tag
         region: "{{ EC2_REGION }}"
-        resource: "{{ elb_sg.group_id }}"
+        resource: "{{ ingress_sg.group_id }}"
         state: present
         tags:
           Name: Lightbend ELB SG
@@ -76,7 +76,7 @@
     - name: Create Nodes SG
       local_action:
         module: ec2_group
-        name: "{{ node_sg_name }}"
+        name: Lightbend Node SG
         description: SG for Lightbend Nodes
         vpc_id: "{{ vpc.vpc_id }}"
         region: "{{ vpc.vpc.region }}"
@@ -90,47 +90,28 @@
           - proto: tcp
             from_port: 2552
             to_port: 2552
-            group_id: "{{ node_sg_name }}"
+            group_name: Lightbend Node SG
           # Health
           - proto: tcp
             from_port: 9009
             to_port: 9009
-            group_id: "{{ elb_sg.group_id }}"
+            group_id: "{{ ingress_sg.group_id }}"
           # Visualizer
           - proto: tcp
             from_port: 9999
             to_port: 9999
-            group_id: "{{ elb_sg.group_id }}"
-          # Akka remoting
+            group_id: "{{ ingress_sg.group_id }}"
+          # Akka remoting, control protocol, bundle transfer
+          # Status server, service locator
           - proto: tcp
             from_port: 9004
-            to_port: 9004
-            group_name: "{{ node_sg_name }}"
-          # Control protocol
-          - proto: tcp
-            from_port: 9005
-            to_port: 9005
-            group_name: "{{ node_sg_name }}"
-          # Bundle transfer
-          - proto: tcp
-            from_port: 9006
-            to_port: 9006
-            group_name: "{{ node_sg_name }}"
-          # Lightbend status server
-          - proto: tcp
-            from_port: 9007
-            to_port: 9007
-            group_name: "{{ node_sg_name }}"
-          # Service locator
-          - proto: tcp
-            from_port: 9008
             to_port: 9008
-            group_name: "{{ node_sg_name }}"
+            group_name: Lightbend Node SG
           # Bundle endpoint assignments
           - proto: tcp
             from_port: 10000
             to_port: 10999
-            group_name: "{{ node_sg_name }}"
+            group_name: Lightbend Node SG
         state: present
       register: node_sg
 
@@ -148,7 +129,7 @@
         module: ec2_elb_lb
         name: "Lightbend-ELB-{{ EC2_REGION }}"
         scheme: internet-facing
-        security_group_ids: "{{ elb_sg.group_id }}"
+        security_group_ids: "{{ ingress_sg.group_id }}"
         state: present
         cross_az_load_balancing: yes
         region: "{{ EC2_REGION }}"

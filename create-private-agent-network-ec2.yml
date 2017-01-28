@@ -1,0 +1,301 @@
+---
+- name: Create Lightbend EC2 network w/ Private Agents
+  hosts: localhost
+  connection: local
+  gather_facts: False
+
+  vars:
+    BASTION_IMAGE: "ami-6edd3078"
+    BASTION_INSTANCE_TYPE: "t2.large"
+    BASTION_VOL_TYPE: "gp2"
+    BASTION_VOL_SIZE: 100
+    EC2_REGION: us-east-1
+    admin_sg_name: Lightbend Admin Access SG
+    core_sg_name: Lightbend Core Node SG
+    ingress_sg_name: Lightbend ELB Ingress SG
+    private_agent_sg_name: Lightbend Private Agent SG
+    public_agent_sg_name: Lightbend Public Agent SG
+
+  tasks:
+    - name: Create VPC
+      local_action:
+        module: ec2_vpc
+        cidr_block: 10.100.0.0/16
+        resource_tags:
+          Name: "Lightbend ConductR VPC"
+        region: "{{ EC2_REGION }}"
+        dns_hostnames: yes
+        dns_support: yes
+        internet_gateway: True
+        route_tables:
+          - subnets:
+              - 10.100.1.0/24
+              - 10.100.2.0/24
+              - 10.100.3.0/24
+              - 10.100.4.0/24
+              - 10.100.5.0/24
+              - 10.100.6.0/24
+            routes:
+              - dest: 0.0.0.0/0
+                gw: igw
+        subnets:
+          - cidr: 10.100.1.0/24
+            az: "{{ EC2_REGION }}a"
+            resource_tags:
+               Name: "Lightbend {{ EC2_REGION }}-A Public SN"
+          - cidr: 10.100.2.0/24
+            az: "{{ EC2_REGION }}a"
+            resource_tags:
+                Name: "Lightbend {{ EC2_REGION }}-A Private SN"
+          - cidr: 10.100.3.0/24
+            az: "{{ EC2_REGION }}b"
+            resource_tags:
+                Name: "Lightbend {{ EC2_REGION }}-B Public SN"
+          - cidr: 10.100.4.0/24
+            az: "{{ EC2_REGION }}b"
+            resource_tags:
+               Name: "Lightbend {{ EC2_REGION }}-B Private SN"
+            # Use 'a' or 'b' again for 2 AZs
+          - cidr: 10.100.5.0/24
+            az: "{{ EC2_REGION }}c"
+            resource_tags:
+                Name: "Lightbend {{ EC2_REGION }}-C Public SN"
+          - cidr: 10.100.6.0/24
+            az: "{{ EC2_REGION }}c"
+            resource_tags:
+                Name: "Lightbend {{ EC2_REGION }}-C Private SN"
+        state: present
+      register: vpc
+
+    - name: Create Admin SG
+      local_action:
+        module: ec2_group
+        name: Lightbend Admin SG
+        description: Admin Access to Lightbend Cluster
+        vpc_id: "{{ vpc.vpc_id }}"
+        region: "{{ vpc.vpc.region }}"
+        state: present
+        rules:
+          - proto: tcp
+            from_port: 22
+            to_port: 22
+            cidr_ip: 0.0.0.0/0
+      register: admin_sg
+
+    - name: Create Ingress SG
+      local_action:
+        module: ec2_group
+        name: Lightbend Ingress SG
+        description: Ingress SG to Lightbend Cluster
+        vpc_id: "{{ vpc.vpc_id }}"
+        region: "{{ vpc.vpc.region }}"
+        state: present
+        rules:
+          - proto: tcp
+            from_port: 80
+            to_port: 80
+            cidr_ip: 0.0.0.0/0
+          - proto: tcp
+            from_port: 443
+            to_port: 443
+            cidr_ip: 0.0.0.0/0
+      register: ingress_sg
+
+    - pause:
+        prompt: "Prevent timing hazard of dependencies"
+        seconds: 5
+
+    - name: Create Public Agent SG
+      local_action:
+        module: ec2_group
+        name: Lightbend Public Agent SG
+        description: SG for ConductR Public Agents
+        vpc_id: "{{ vpc.vpc_id }}"
+        region: "{{ vpc.vpc.region }}"
+        rules:
+          # Admin SSH
+          - proto: tcp
+            from_port: 22
+            to_port: 22
+            group_id: "{{ admin_sg.group_id}}"
+          # HTTP application endpoints
+          - proto: tcp
+            from_port: 9000
+            to_port: 9000
+            group_id: "{{ ingress_sg.group_id }}"
+          # ELB health check
+          - proto: tcp
+            from_port: 9009
+            to_port: 9009
+            group_id: "{{ ingress_sg.group_id }}"
+          # Visualizer
+          - proto: tcp
+            from_port: 9999
+            to_port: 9999
+            group_id: "{{ ingress_sg.group_id }}"
+        state: present
+      register: public_agent_sg
+
+    - name: Create Private Agent SG
+      local_action:
+        module: ec2_group
+        name: Lightbend Private Agent SG
+        description: Lightbend Private Agent SG
+        vpc_id: "{{ vpc.vpc_id }}"
+        region: "{{ vpc.vpc.region }}"
+        rules:
+          # Admin SSH
+          - proto: tcp
+            from_port: 22
+            to_port: 22
+            group_id: "{{ admin_sg.group_id }}"
+          # Proxy access from ConductR public agents
+          - proto: tcp
+            from_port: 10000
+            to_port: 10999
+            group_name: "{{ public_agent_sg.group_id }}"
+        state: present
+      register: private_agent_sg
+
+    - name: Create Core Nodes SG
+      local_action:
+        module: ec2_group
+        name: Lightbend Core Node SG
+        description: SG for Core Nodes
+        vpc_id: "{{ vpc.vpc_id }}"
+        region: "{{ vpc.vpc.region }}"
+        rules:
+          # Admin SSH
+          - proto: tcp
+            from_port: 22
+            to_port: 22
+            group_id: "{{ admin_sg.group_id }}"
+          # Akka Remoting, Control Protocol, Bundle Stream Server,
+          # Status Server and Service Locator
+          # From Public Agent to Core
+          - proto: tcp
+            from_port: 9004
+            to_port: 9008
+            group_id: "{{ public_agent_sg.group_id }}"
+          # Akka Remoting, Control Protocol, Bundle Stream Server,
+          # Status Server and Service Locator
+          # From Private Agent to Core
+          - proto: tcp
+            from_port: 9004
+            to_port: 9008
+            group_id: "{{ private_agent_sg.group_id }}"
+        state: present
+      register: core_sg
+
+    - name: Akka Remoting Private Agents
+      local_action:
+        module: ec2_group
+        name: Lightbend Private Agent SG
+        description: Lightbend Private Agent SG
+        region: "{{ vpc.vpc.region }}"
+        rules:
+          # Agent Remote Port
+          - proto: tcp
+            from_port: 2552
+            to_port: 2552
+            group_id: "{{ core_sg.group_id}}"
+
+    - name: Akka Remoting Public Agents
+      local_action:
+        module: ec2_group
+        name: Lightbend Public Agent SG
+        description: Lightbend Public Agent SG
+        region: "{{ vpc.vpc.region }}"
+        rules:
+          # Agent Remote Port
+          - proto: tcp
+            from_port: 2552
+            to_port: 2552
+            group_id: "{{ core_sg.group_id}}"
+
+    - name: Launch Bastion Node
+      local_action:
+        module: ec2
+        image: "{{ BASTION_IMAGE }}"
+        instance_type: "{{ BASTION_INSTANCE_TYPE }}"
+        keypair: "{{ KEYPAIR }}"
+        region: "{{ EC2_REGION }}"
+        group_id: "{{ admin_sg.group_id }}"
+        vpc_subnet_id: "{{ vpc.subnets[0].id }}"
+        assign_public_ip: yes
+        instance_tags:
+          Name: "Lightbend Admin Bastion"
+          Role: Bastion Node
+        count: 1
+        volumes:
+          - device_name: /dev/sda1
+            device_type: "{{ BASTION_VOL_TYPE }}"
+            volume_size: "{{ BASTION_VOL_SIZE }}"
+            delete_on_termination: true
+        wait: yes
+      register: ec2
+
+    - name: Add to bastion_public
+      add_host:
+        groupname: "bastion_public"
+        hostname: "{{ ec2.instances[0].public_ip }}"
+
+    - name: Wait for SSH to come up
+      wait_for:
+        host: "{{ groups.bastion_public[0] }}"
+        port: 22
+        delay: 60
+        timeout: 320
+        state: started
+
+    - name: Create ELB
+      local_action:
+        module: ec2_elb_lb
+        name: "Lightbend-ELB-{{ EC2_REGION }}"
+        scheme: internet-facing
+        security_group_ids: "{{ ingress_sg.group_id }}"
+        state: present
+        cross_az_load_balancing: yes
+        region: "{{ EC2_REGION }}"
+        subnets:
+          - "{{ vpc.subnets[0].id }}"
+          - "{{ vpc.subnets[2].id }}"
+          - "{{ vpc.subnets[4].id }}"
+        listeners:
+          # Upload a cert to use SSL
+          # Example listener for Visualizer 80 -> 9999
+          - protocol: http
+            load_balancer_port: 80
+            instance_port: 9999
+        health_check:
+            ping_protocol: http
+            ping_port: 9009
+            ping_path: /status
+            response_timeout: 5
+            interval: 30
+            unhealthy_threshold: 2
+            healthy_threshold: 3
+      register: elb
+
+    - debug: msg="ELB zone name {{ elb.elb.dns_name }}"
+
+    - debug: msg="Add listeners to {{ elb.elb.dns_name }} to expose bundle endpoints"
+
+    - debug: msg="Upload x.509 certificate to ELB for SSL endpoints"
+
+    - name: Create vars file
+      template:
+        src: templates/vars-private-agent.j2
+        dest: "vars/{{ EC2_REGION }}_private_agent_vars.yml"
+
+    - debug: msg="Vars file vars/{{ EC2_REGION }}_private_agent_vars.yml created"
+
+- name: Setup Bastion
+  hosts: bastion_public
+  user: "{{ REMOTE_USER }}"
+  gather_facts: False
+  sudo: True
+
+  tasks:
+    - include: ansible/tasks/setup-ansible.yml
+    - include: system/tasks/upgrade-ubuntu.yml

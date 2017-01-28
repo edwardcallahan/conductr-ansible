@@ -1,4 +1,4 @@
---- 
+---
 - name: Provision and configure a ConductR cluster on AWS
   hosts: localhost
   connection: local
@@ -6,26 +6,27 @@
 
   vars_files:
     - "{{ VARS_FILE }}"
-    
+
   tasks:
-    - name: Launch Seed
+    - name: Launch Seed Node
       local_action:
         module: ec2
-        image: "{{ IMAGE }}"
-        instance_type: "{{ INSTANCE_TYPE }}"
+        image: "{{ NODE_IMAGE }}"
+        instance_type: "{{ NODE_INSTANCE_TYPE }}"
         keypair: "{{ KEYPAIR }}"
         region: "{{ EC2_REGION }}"
-        group_id: "{{ NODE_SECURITY_GROUP }}"
-        vpc_subnet_id: "{{ SUBNET_SEED }}"
+        group_id: "{{ NODE_SG }}"
+        vpc_subnet_id: "{{ SN_1 }}"
         assign_public_ip: yes
         instance_tags:
           Name: "{{ TAG_NAME }}"
           Role: Seed Node
+          Version: "{{ CONDUCTR_VERSION}}"
         count: 1
         volumes:
           - device_name: /dev/sda1
-            device_type: "{{VOL_TYPE }}"
-            volume_size: "{{ VOL_SIZE }}"
+            device_type: "{{ NODE_VOL_TYPE }}"
+            volume_size: "{{ NODE_VOL_SIZE }}"
             delete_on_termination: true
         wait: yes
       register: ec2
@@ -42,39 +43,81 @@
         groupname: "seeds_private"
         hostname: "{{ ec2.instances[0].private_ip }}"
 
-    - name: Add public ip to nodes
+    - name: Add public ip to nodes_public
       add_host:
-        groupname: "nodes"
+        groupname: "nodes_public"
         hostname: "{{ ec2.instances[0].public_ip }}"
+
+    - name: Add public ip to nodes_private
+      add_host:
+        groupname: "nodes_private"
+        hostname: "{{ ec2.instances[0].private_ip }}"
 
     - name: Launch Nodes
       local_action:
         module: ec2
-        image: "{{ IMAGE }}"
-        instance_type: "{{ INSTANCE_TYPE }}"
+        image: "{{ NODE_IMAGE }}"
+        instance_type: "{{ NODE_INSTANCE_TYPE }}"
         keypair: "{{ KEYPAIR }}"
         region: "{{ EC2_REGION }}"
-        group_id: "{{ NODE_SECURITY_GROUP }}"
+        group_id: "{{ NODE_SG }}"
         vpc_subnet_id: "{{ item }}"
         assign_public_ip: yes
         instance_tags:
           Name: "{{ TAG_NAME }}"
           Role: Node
+          Version: "{{ CONDUCTR_VERSION}}"
         count: 1
         volumes:
           - device_name: /dev/sda1
-            device_type: "{{ VOL_TYPE }}"
-            volume_size: "{{ VOL_SIZE }}"
+            device_type: "{{ NODE_VOL_TYPE }}"
+            volume_size: "{{ NODE_VOL_SIZE }}"
             delete_on_termination: true
         wait: yes
       register: ec2
       with_items:
-        - "{{ SUBNET1 }}"
-        - "{{ SUBNET2 }}"
+        - "{{ SN_2 }}"
+        - "{{ SN_3 }}"
 
-    - name: Add public ip to nodes
+    - name: Add public ip to nodes_public
       add_host:
-        groupname: "nodes"
+        groupname: "nodes_public"
+        hostname: "{{ item.instances[0].public_ip }}"
+      with_items: "{{ ec2.results }}"
+
+    - name: Add private ip to nodes_private
+      add_host:
+        groupname: "nodes_private"
+        hostname: "{{ item.instances[0].private_ip }}"
+      with_items: "{{ ec2.results }}"
+
+    - name: Launch Template Nodes
+      local_action:
+        module: ec2
+        image: "{{ TEMPLATE_IMAGE }}"
+        instance_type: "{{ TEMPLATE_INSTANCE_TYPE }}"
+        keypair: "{{ KEYPAIR }}"
+        region: "{{ EC2_REGION }}"
+        group_id: "{{ NODE_SG }}"
+        vpc_subnet_id: "{{ item }}"
+        assign_public_ip: yes
+        instance_tags:
+          Name: "{{ TAG_NAME }} Template"
+          Role: Template
+        count: 1
+        volumes:
+          - device_name: /dev/sda1
+            device_type: "{{ TEMPLATE_VOL_TYPE }}"
+            volume_size: "{{ TEMPLATE_VOL_SIZE }}"
+            delete_on_termination: true
+        wait: yes
+      register: ec2
+      with_items:
+        - "{{ SN_1 }}"
+
+    - name: Save template node ip
+      add_host:
+        groupname: "template_nodes"
         hostname: "{{ item.instances[0].public_ip }}"
       with_items: "{{ ec2.results }}"
 
@@ -88,7 +131,7 @@
       with_items: "{{ ec2.results }}"
 
 - name: Setup ConductR
-  hosts: nodes
+  hosts: nodes_public
   user: "{{ REMOTE_USER }}"
   gather_facts: False
   sudo: True
@@ -112,6 +155,8 @@
     - include: haproxy/tasks/main.yml
     - include: conductr/tasks/install-core.yml
     - include: conductr/tasks/install-agent.yml
+      vars:
+          CORE_OBSERVER_PRIVATE_IP: "{{ groups.seeds_private[0] }}"
 
 - name: Install ConductR HAProxy from the seed node
   hosts: seeds_public
@@ -123,12 +168,33 @@
     - "{{ VARS_FILE }}"
 
   tasks:
+    - include: "bundle/tasks/config-elasticsearch.yml"
+    - include: "bundle/tasks/config-haproxy.yml"
     - include: "bundle/tasks/install-conductr-haproxy.yml"
+    - include: "bundle/tasks/install-visualizer.yml"
+
+    - pause:
+      prompt: "Allowing instances to become healthy. Abort to not launch template instance, requiring manual registration w/ELB"
+      seconds: 90
+
+- name: Setup Template Node
+  hosts: template_nodes
+  user: "{{ REMOTE_USER }}"
+  gather_facts: False
+  sudo: True
+
+  vars_files:
+    - "{{ VARS_FILE }}"
+
+  tasks:
+    - include: python/tasks/main.yml
+    - include: java/tasks/main.yml
+    - include: ntp/tasks/main.yml
 
 - name: Register ConductR with ELB
-  hosts: nodes
+  hosts: nodes_public
   user: "{{ REMOTE_USER }}"
-  gather_facts: True
+  gather_facts: False
   sudo: True
 
   vars:

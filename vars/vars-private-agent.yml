@@ -1,0 +1,75 @@
+---
+# Must be set to the key pair name of the file passed to playbook
+KEYPAIR: "Key Pair Name"
+CONDUCTR_VERSION: 2.0.0
+EC2_REGION: "us-east-1"
+EC2_AZ_1: a
+EC2_AZ_2: b
+EC2_AZ_3: c
+ENABLE_DEBUG: "true"
+ENABLE_ROLES: "true"
+INSTALL_DOCKER: "true"
+REMOTE_USER: "ubuntu"
+
+# This image is Ubuntu 16.04 LTS amd64 hvm:ebs-ssd in us-east-1
+# Must be changed to region local Ubuntu AMI for all other regions
+CORE_IMAGE: "ami-6edd3078"
+PRIVATE_AGENT_IMAGE: "ami-6edd3078"
+PUBLIC_AGENT_IMAGE: "ami-6edd3078"
+TEMPLATE_IMAGE: "ami-6edd3078"
+
+CORE_INSTANCE_TYPE: "t2.large"
+CORE_VOL_TYPE: "gp2"
+CORE_VOL_SIZE: 100
+PRIVATE_AGENT_INSTANCE_TYPE: "t2.xlarge"
+PRIVATE_AGENT_VOL_TYPE: "gp2"
+PRIVATE_AGENT_VOL_SIZE: 300
+PUBLIC_AGENT_INSTANCE_TYPE: "t2.large"
+PUBLIC_AGENT_VOL_TYPE: "gp2"
+PUBLIC_AGENT_VOL_SIZE: 20
+TEMPLATE_INSTANCE_TYPE: "t2.small"
+TEMPLATE_VOL_TYPE: "gp2"
+TEMPLATE_VOL_SIZE: 10
+
+CORE_SG: "sg-xxxxxxxx"
+INGRESS_SG: "sg-xxxxxxxx"
+PRIVATE_AGENT_SG: "sg-xxxxxxxx"
+PUBLIC_AGENT_SG: "sg-xxxxxxxx"
+
+CORE_SG: "{{ admin_sg.group_id }}"
+INGRESS_SG: "{{ admin_sg.group_id }}"
+PUBLIC_AGENT_SG: "{{ admin_sg.group_id }}"
+PRVIATE_AGENT_SG: "{{ admin_sg.group_id }}"
+
+AZ_PUBLIC_1: "{{ vpc.subnets[0].az }}"
+SN_PUBLIC_1: "{{ vpc.subnets[0].id }}"
+AZ_PRIVATE_1: "{{ vpc.subnets[1].az }}"
+SN_PRIVATE_1: "{{ vpc.subnets[1].id }}"
+AZ_PUBLIC_2: "{{ vpc.subnets[2].az }}"
+SN_PUBLIC_2: "{{ vpc.subnets[2].id }}"
+AZ_PRIVATE_2: "{{ vpc.subnets[3].az }}"
+SN_PRIVATE_2: "{{ vpc.subnets[3].id }}"
+AZ_PUBLIC_3: "{{ vpc.subnets[4].az }}"
+SN_PUBLIC_3: "{{ vpc.subnets[4].id }}"
+AZ_PRIVATE_3: "{{ vpc.subnets[5].az }}"
+SN_PRIVATE_3: "{{ vpc.subnets[5].id }}"
+
+
+ELB_NAME: "Lightbend ConductR ELB {{ EC2_REGION }}"
+TAG_NAME: "Lightbend ConductR"
+CONDUCTR_PKG: "conductr_2.0.0_all.deb"
+CONDUCTR_CORE_WORK_DIR: "/tmp"
+CONDUCTR_AGENT_PKG: "conductr-agent_2.0.0_all.deb"
+CONDUCTR_AGENT_WORK_DIR: "/tmp/conductr-agent"
+
+# ConductR 2.*:
+# If you wish to add your own role, uncomment the following
+# In the example below, we are adding a role called `my-role`
+# to private agents and my-proxy to public agents.
+# CONDUCTR_PRIVATE_AGENT_ROLES:
+#   - web
+#   - elasticsearch
+#   - my-role
+# CONDUCTR_PUBLIC_AGENT_ROLES:
+#   - haproxy
+#   - my-proxy

@@ -1,31 +1,48 @@
 ---
 # Must be set to the key pair name of the file passed to playbook
 KEYPAIR: "Key Pair Name"
+CONDUCTR_VERSION: "2.0.0"
+EC2_REGION: "us-east-1"
+EC2_AZ_1: "a"
+EC2_AZ_2: "b"
+EC2_AZ_3: "c"
+ENABLE_DEBUG: "true"
+ENABLE_ROLES: "true"
+INSTALL_DOCKER: "true"
+REMOTE_USER: "ubuntu"
 
 # This image is Ubuntu 16.04 LTS amd64 hvm:ebs-ssd in us-east-1
 # Must be changed to region local Ubuntu AMI for all other regions
-IMAGE: "ami-40d28157"
+BASTION_IMAGE: "ami-6edd3078"
+NODE_IMAGE: "ami-6edd3078"
+TEMPLATE_IMAGE: "ami-6edd3078"
 
-REMOTE_USER: "ubuntu"
-REMOTE_WORK_DIR: "/home/ubuntu"
-INSTANCE_TYPE: "t2.medium"
-VOL_TYPE: "gp2"
-VOL_SIZE: 30
-EC2_REGION: "{{ EC2_REGION }}"
-ENABLE_DEBUG: "true"
-INSTALL_DOCKER: "true"
-NODE_SECURITY_GROUP: "{{ node_sg.group_id }}"
-AZ_SEED: "{{ vpc.subnets[0].az }}"
-SUBNET_SEED: "{{ vpc.subnets[0].id }}"
-AZ_SN1: "{{ vpc.subnets[1].az }}"
-SUBNET1: "{{ vpc.subnets[1].id }}"
-AZ_SN2: "{{ vpc.subnets[2].az }}"
-SUBNET2: "{{ vpc.subnets[2].id }}"
-ELB: "{{ elb.elb.name }}"
-TAG_NAME: "Lightbend ConductR Node"
+ADMIN_SG: "{{ admin_sg.group_id }}"
+BASTION_INSTANCE_TYPE: "t2.large"
+BASTION_VOL_TYPE: "gp2"
+BASTION_VOL_SIZE: 100
+NODE_INSTANCE_TYPE: "t2.xlarge"
+NODE_SG: "{{ node_sg.group_id }}"
+NODE_VOL_TYPE: "gp2"
+NODE_VOL_SIZE: 200
+TEMPLATE_INSTANCE_TYPE: "t2.small"
+TEMPLATE_VOL_TYPE: "gp2"
+TEMPLATE_VOL_SIZE: 20
+
+AZ_1: "{{ vpc.subnets[0].az }}"
+SN_1: "{{ vpc.subnets[0].id }}"
+AZ_2: "{{ vpc.subnets[1].az }}"
+SN_2: "{{ vpc.subnets[1].id }}"
+AZ_3: "{{ vpc.subnets[2].az }}"
+SN_3: "{{ vpc.subnets[2].id }}"
+
+ELB_NAME: "{{ elb.elb.name }}"
+TAG_NAME: "Lightbend ConductR"
 CONDUCTR_PKG: "conductr_2.0.0_all.deb"
+CONDUCTR_CORE_WORK_DIR: "/tmp"
 CONDUCTR_AGENT_PKG: "conductr-agent_2.0.0_all.deb"
 CONDUCTR_AGENT_WORK_DIR: "/tmp/conductr-agent"
+
 # ConductR 2.*:
 # If you wish to add your own role, uncomment the following
 # In the example below, we are adding a role called `my-role`.

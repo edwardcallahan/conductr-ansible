@@ -1,11 +1,11 @@
 ---
 - name: Copy ConductR Agent
-  synchronize: src=conductr/files/{{ CONDUCTR_AGENT_PKG }} dest={{ REMOTE_WORK_DIR }}
+  synchronize: src=conductr/files/{{ CONDUCTR_AGENT_PKG }} dest={{ CONDUCTR_CORE_WORK_DIR }}
 
 - name: Install ConductR Agent
-  apt: deb={{ REMOTE_WORK_DIR }}/{{ CONDUCTR_AGENT_PKG }}
+  apt: deb={{ CONDUCTR_CORE_WORK_DIR }}/{{ CONDUCTR_AGENT_PKG }}
 
-- command: rm {{ REMOTE_WORK_DIR }}/{{ CONDUCTR_AGENT_PKG }}
+- command: rm {{ CONDUCTR_CORE_WORK_DIR }}/{{ CONDUCTR_AGENT_PKG }}
 
 - service: name=conductr-agent state=stopped
 
@@ -13,8 +13,7 @@
   become: yes
   become_method: sudo
 
-- shell: 'echo --core-node {{ groups.seeds_private[0]}}:9004 | sudo tee -a /usr/share/conductr-agent/conf/conductr-agent.ini'
-  with_items: "{{ groups.seeds_public }}"
+- shell: 'echo --core-node {{ CORE_OBSERVER_PRIVATE_IP }}:9004 | sudo tee -a /usr/share/conductr-agent/conf/conductr-agent.ini'
   become: yes
   become_method: sudo
 
@@ -24,53 +23,20 @@
   when: "{{ ENABLE_DEBUG }} == true"
 
 - name: Get AZ
-  get_url: url=http://169.254.169.254/latest/meta-data/placement/availability-zone dest={{ REMOTE_WORK_DIR }}//az.txt
+  get_url: url=http://169.254.169.254/latest/meta-data/placement/availability-zone dest={{ CONDUCTR_CORE_WORK_DIR }}//az.txt
 
-- shell: "cat {{ REMOTE_WORK_DIR }}/az.txt"
+- shell: "cat {{ CONDUCTR_CORE_WORK_DIR }}/az.txt"
   register: az
 
-- shell: 'echo -Dconductr.agent.roles.0={{ az.stdout }} | sudo tee -a /usr/share/conductr-agent/conf/conductr-agent.ini'
-  become: yes
-  become_method: sudo
+- debug:
+    var: CONDUCTR_AGENT_ROLES
 
-- shell: 'echo -Dconductr.agent.roles.{{ item.0 + 1  }}={{ item.1 }} | sudo tee -a /usr/share/conductr-agent/conf/conductr-agent.ini'
+- shell: 'echo -Dconductr.agent.roles.{{ item.0 }}={{ item.1 }} | sudo tee -a /usr/share/conductr-agent/conf/conductr-agent.ini'
   become: yes
   become_method: sudo
   with_indexed_items: "{{ CONDUCTR_AGENT_ROLES }}"
 
-- shell: 'echo -Dconductr.agent.storage-dir={{ CONDUCTR_AGENT_WORK_DIR }}/bundles | sudo tee -a /usr/share/conductr-agent/conf/conductr-agent.ini'
-  become: yes
-  become_method: sudo
-
-- command: chown conductr-agent:conductr-agent /etc/haproxy/haproxy.cfg
-  become: yes
-  become_method: sudo
-
-- command: touch /usr/bin/reloadHAProxy.sh
-  become: yes
-  become_method: sudo
-
-- command: chmod 0700 /usr/bin/reloadHAProxy.sh
-  become: yes
-  become_method: sudo
-
-- command: chown conductr-agent:conductr-agent /usr/bin/reloadHAProxy.sh
-  become: yes
-  become_method: sudo
-
-- shell: 'echo "conductr-agent ALL=(root) NOPASSWD: /usr/bin/reloadHAProxy.sh" | sudo tee -a /etc/sudoers'
-  become: yes
-  become_method: sudo
-
-- command: mkdir -p /var/lib/elasticsearch /var/log/elasticsearch
-  become: yes
-  become_method: sudo
-
-- command: chown conductr-agent:conductr-agent /var/lib/elasticsearch
-  become: yes
-  become_method: sudo
-
-- command: chown conductr-agent:conductr-agent /var/log/elasticsearch
+- shell: 'echo -Dconductr.agent.roles.{{ CONDUCTR_AGENT_ROLES | length }}={{ az.stdout }} | sudo tee -a /usr/share/conductr-agent/conf/conductr-agent.ini'
   become: yes
   become_method: sudo
 
