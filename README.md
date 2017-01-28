@@ -2,8 +2,8 @@
 
 These plays and playbooks provision [Lightbend ConductR](https://conductr.lightbend.com) cluster nodes in AWS EC2 using [Ansible](http://www.ansible.com). ConductR is the project name for Service Orchestration in Lightbend Production Suite.
 
-**This version of ConductR Ansible is compatible with ConductR's Master branch, currently 2.0.x ea.**
-For stable branch versions, use the corresponding branch, i.e. Conductr-Ansible 1.1.x branch for use with ConductR 1.1.x.
+**This version of ConductR Ansible is compatible with ConductR's Master branch, currently 2.0.x.**
+For previous versions, use the corresponding branch, i.e. Conductr-Ansible 1.1.x branch for use with ConductR 1.1.x.
 
 ConductR can be deployed to a simple 'flat' topology or to a production style private/public topology. For those just getting started, trying it out or otherwise wanting the simple setup should use the flat approach. Only if you want the segmentation of private agents should you use the 'private-agents' version of the playbooks.
 
@@ -59,6 +59,12 @@ Optionally specify what [EC2 region](http://docs.aws.amazon.com/general/latest/g
 ansible-playbook create-network-ec2.yml -e "EC2_REGION=eu-west-1"
 ```
 
+To create a network with private and public agent in differnet subnets run the `create-private-agent-network' playbook. This playbook requires a keypair setting for launching a bastion host
+
+```bash
+ansible-playbook create-private-agent-network-ec2.yml  -e "KEYPAIR={{ keyname }}" --private-key /path/to/{{keypair}}
+```
+
 The playbook defaults to availability zones `a`, `b`, and `c`. Change the create-network playbook directly to use other or fewer zones.
 
 The create network playbook produces a vars file in the `vars` folder named `{{EC2_REGION}}_vars.yml` where {{EC2_REGION}} is the region used. You **must** add the name of your key pair to `{{EC2_REGION}}_vars.yml` in order to use it with the build cluster script. Change the "Key Pair Name" of `KEYPAIR: "Key Pair Name"` to that of the key pair name, which may be different than the file name and generally does not end in the .pem file extension.
@@ -71,6 +77,12 @@ All the nodes will be assigned a public ip address so you can ssh into nodes usi
 
 ```bash
 ansible-playbook build-cluster-ec2.yml -e "VARS_FILE=vars/{{EC2_REGION}}_vars.yml" --private-key /path/to/{{keypair}}
+```
+
+or if you are using the private agent network
+
+```bash
+ansible-playbook build-private-agent-cluster-ec2.yml -e "VARS_FILE=vars/{{EC2_REGION}}_vars.yml" --private-key /path/to/{{keypair}}
 ```
 
 ## Accessing cluster applications
