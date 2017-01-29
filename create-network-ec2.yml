@@ -14,7 +14,7 @@
         module: ec2_vpc
         cidr_block: 10.0.0.0/16     
         resource_tags:
-          Name: "Lightbend ProdSuite Cluster VPC"
+          Name: "Lightbend Cluster VPC"
         region: "{{ EC2_REGION }}"
         dns_hostnames: yes
         dns_support: yes

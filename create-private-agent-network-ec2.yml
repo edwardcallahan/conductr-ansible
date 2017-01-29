@@ -17,14 +17,12 @@
     public_agent_sg_name: Lightbend Public Agent SG
 
   tasks:
-    - include: conductr/tasks/validate.yml
-
     - name: Create VPC
       local_action:
         module: ec2_vpc
         cidr_block: 10.100.0.0/16
         resource_tags:
-          Name: "Lightbend ConductR VPC"
+          Name: "Lightbend Production Suite Cluster VPC"
         region: "{{ EC2_REGION }}"
         dns_hostnames: yes
         dns_support: yes
@@ -294,7 +292,7 @@
 
 - name: Setup Bastion
   hosts: bastion_public
-  user: "{{ REMOTE_USER }}"
+  user: "ubuntu"
   gather_facts: False
   sudo: True
 

@@ -5,10 +5,10 @@ These plays and playbooks provision [Lightbend ConductR](https://conductr.lightb
 **This version of ConductR Ansible is compatible with ConductR's Master branch, currently 2.0.x.**
 For previous versions, use the corresponding branch, i.e. Conductr-Ansible 1.1.x branch for use with ConductR 1.1.x.
 
-ConductR can be deployed to a simple 'flat' topology or to a production style private/public topology. For those just getting started, trying it out or otherwise wanting the simple setup should use the flat approach. Only if you want the segmentation of private agents should you use the 'private-agents' version of the playbooks.
+ConductR can be deployed to a simple 'flat' topology or to a production style private/public topology. For those just getting started, evaluating or otherwise wanting the easier option should use the flat approach. Only if you want the segmentation of private agents should you use the 'private-agents' version of the playbooks.
 
 Use create-network-ec2.yml to setup a new VPC and create your cluster in the new VPC. You only need to provide your access keys and what region to execute in.
-The playbook outputs a vars file for use with the build-cluster-ec.yml.
+The playbook outputs a vars file for use with the build-cluster-ec.yml. The username and password of 'commercial.properties' and the 'keypair' of generated vars file must be set prior to use.
 
 The playbook build-cluster-ec2.yml launches four nodes running both the core and the agent processes as well as a small template instance for imaging. Be certain to review and customize the vars file before building the cluster.
 
@@ -19,7 +19,7 @@ The create-private-agent-network-ec2.yml playbook also configures a VPC for Prod
 You'll need the following in order to use these playbooks.
 
 * Access Key and Secret for an AWS Account with permissions to admin EC2.
-* Ansible installed on a controller host. The faster the controller host's connection to the choosen EC2 region, the faster nodes will launch. Ssh access to a small to medium instance in the same AWS region as your cluster works well. See Ansible Setup below for further details.
+* Ansible installed on a controller host. The faster the controller host's connection to the chosen EC2 region, the faster nodes will launch. Ssh access to a small to medium instance in the same AWS region as your cluster works well. See Ansible Setup below for further details.
 * An AWS Key Pair (PEM file) downloaded to the Ansible controller host.
 * A copy of the ConductR deb installation package on the Ansible controller host.
 * A copy of this GitHub repo on the Ansible controller host.
@@ -29,9 +29,11 @@ You'll need the following in order to use these playbooks.
 
 ConductR is **not** provided by this repository. Visit the [Customer Portal](https://together.lightbend.com/) to download or [Lightbend.com](https://www.lightbend.com/products/conductr) to sign up to evaluate Lightbend Production Suite. Developers should use the [developer sandbox](https://www.lightbend.com/product/conductr/developer) to validate bundle packaging and execution.
 
-Copy the ConductR deb (conductr_x.y.z_all.deb) *and* the ConductR-Agent deb (conductr-agent_x.y.z_all.deb) installation package into the `conductr/files` folder in your local copy of this repo. The installation package will be uploaded from this folder by the ConductR play to each of the EC2 instances for installation.
+Obtain your Lightbend credentials from [Lightbend.com](https://www.lightbend.com/product/conductr/developer) and replace 'username' and 'password' in 'conductr/files/commercial.properties'.
 
-Log into the AWS Console and select or generate a key pair in the region you intend to use. You'll need both the path to a local copy of the PEM file and the key pair name used in console to record in your vars file.
+Copy the ConductR deb (conductr_x.y.z-systemd_all.deb) *and* the ConductR-Agent deb (conductr-agent_x.y.z-systemd_all.deb) installation package into the `conductr/files` folder in your local copy of this repo. The installation package will be uploaded from this folder by the ConductR play to each of the EC2 instances for installation.
+
+Log into the AWS Console and select or generate a key pair in the region you intend to use. You'll need both the path to a local copy of the PEM file and the key pair name used in console to record in your vars file. Specify your 'keypair' in the vars file.
 
 ## Running the Plays
 
