@@ -7,3 +7,4 @@
 
 - name: Run conductr-elasticsearch
   command: "conduct run --ip {{ host_ip.stdout}}  conductr-elasticsearch"
+  ignore_errors: yes

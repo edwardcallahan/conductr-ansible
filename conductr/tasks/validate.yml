@@ -1,32 +1,27 @@
 ---
 - stat:
-    path=conductr/files/{{ COMMERCIAL_CREDENTIALS }}
+    path: conductr/files/{{ COMMERCIAL_CREDENTIALS }}
   register: creds
 
-- debug:
-   msg="!!! Required file {{ COMMERCIAL_CREDENTIALS }} not found in conductr/files !!!"
+- debug: msg="!!! Required file {{ COMMERCIAL_CREDENTIALS }} not found in conductr/files !!!"
   register: have_error
   when: creds.stat.exists == False
 
-- stat:
-    path=conductr/files/{{ CONDUCTR_PKG }}
+- stat: path=conductr/files/{{ CONDUCTR_PKG }}
   register: core_pkg
 
-- debug:
-   msg="!!! Required file {{ CONDUCTR_PKG }} not found in conductr/files !!!"
+- debug: msg="!!! Required file {{ CONDUCTR_PKG }} not found in conductr/files !!!"
   register: have_error
   when: core_pkg.stat.exists == False
 
-- stat:
-    path=conductr/files/{{ CONDUCTR_AGENT_PKG }}
+- stat: path=conductr/files/{{ CONDUCTR_AGENT_PKG }}
   register: agent_pkg
 
-- debug:
-    msg="!!! Required file {{ CONDUCTR_AGENT_PKG }} not found in conductr/files !!!"
+- debug: msg="!!! Required file {{ CONDUCTR_AGENT_PKG }} not found in conductr/files !!!"
   register: have_error
   when: agent_pkg.stat.exists == False
 
 - pause:
-  prompt: "Abort ?"
-  seconds: 15
+    prompt: "Abort if errors"
+    seconds: 15
   when: have_error is defined

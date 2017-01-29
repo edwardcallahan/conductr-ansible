@@ -106,6 +106,7 @@
         instance_tags:
           Name: "{{ TAG_NAME }} Template"
           Role: Template
+          Version: "{{ CONDUCTR_VERSION}}"
         count: 1
         volumes:
           - device_name: /dev/sda1
@@ -164,7 +165,6 @@
   hosts: seeds_public
   user: "{{ REMOTE_USER }}"
   gather_facts: True
-  sudo: True
 
   vars_files:
     - "{{ VARS_FILE }}"
@@ -178,8 +178,8 @@
     - include: "bundle/tasks/install-visualizer.yml"
 
     - pause:
-      prompt: "Allowing instances to become healthy. Abort to not launch template instance, requiring manual registration w/ELB"
-      seconds: 90
+        prompt: "Allowing instances to become healthy. Abort to not launch template instance, requiring manual registration w/ELB"
+        seconds: 90
 
 - name: Setup Template Node
   hosts: template_nodes

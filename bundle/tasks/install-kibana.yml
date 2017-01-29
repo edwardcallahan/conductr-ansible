@@ -7,3 +7,4 @@
 
 - name: Run conductr-kibana
   command: "conduct run --ip {{ host_ip.stdout}}  conductr-kibana"
+  ignore_errors: yes

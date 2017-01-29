@@ -164,4 +164,4 @@
         src: templates/vars.j2
         dest: "vars/{{ EC2_REGION }}_vars.yml"
 
-    - debug: msg="Vars file vars/{{ EC2_REGION }}_vars.yml created"
+    - debug: msg="Vars file vars/{{ EC2_REGION }}_vars.yml created. You MUST add KEYPAIR name to vars file before using!"

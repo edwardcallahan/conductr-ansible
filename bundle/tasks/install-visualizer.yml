@@ -7,4 +7,5 @@
 
 - name: Run Bundle
   command: "conduct run --ip {{ host_ip.stdout}} visualizer"
+  ignore_errors: yes
 
