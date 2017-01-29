@@ -10,8 +10,9 @@ ConductR can be deployed to a simple 'flat' topology or to a production style pr
 Use create-network-ec2.yml to setup a new VPC and create your cluster in the new VPC. You only need to provide your access keys and what region to execute in.
 The playbook outputs a vars file for use with the build-cluster-ec.yml.
 
-The playbook build-cluster-ec2.yml launches four nodes running both the core and the agent processes as well as a template instance for imaging.
-The playbook build-private-agent-cluster-ec2.yml launches three core nodes, three private agents, three public agents and one template node instances across three availability zones. Core, private agent, public agent and template nodes can be of different AMI, instance and volume size.
+The playbook build-cluster-ec2.yml launches four nodes running both the core and the agent processes as well as a small template instance for imaging. Be certain to review and customize the vars file before building the cluster.
+
+The create-private-agent-network-ec2.yml playbook also configures a VPC for Production Suite. It also launches an admin bastion host for running the cluster plays from. This is required to manage private nodes that will not have a public ip address. The playbook build-private-agent-cluster-ec2.yml launches three core nodes, three private agents, three public agents and one small template node instances across three availability zones. Core, private agent, public agent and template nodes can be of different AMI, instance and volume size.
 
 ## Prerequisites
 
@@ -26,7 +27,7 @@ You'll need the following in order to use these playbooks.
 
 ## Setup
 
-ConductR is **not** provided by this repository. Visit the [Customer Portal](https://together.lightbend.com/) to download or [Lightbend.com](https://www.lightbend.com/products/conductr) to sign up to evaluate Lightbend Production Suite.
+ConductR is **not** provided by this repository. Visit the [Customer Portal](https://together.lightbend.com/) to download or [Lightbend.com](https://www.lightbend.com/products/conductr) to sign up to evaluate Lightbend Production Suite. Developers should use the [developer sandbox](https://www.lightbend.com/product/conductr/developer) to validate bundle packaging and execution.
 
 Copy the ConductR deb (conductr_x.y.z_all.deb) *and* the ConductR-Agent deb (conductr-agent_x.y.z_all.deb) installation package into the `conductr/files` folder in your local copy of this repo. The installation package will be uploaded from this folder by the ConductR play to each of the EC2 instances for installation.
 

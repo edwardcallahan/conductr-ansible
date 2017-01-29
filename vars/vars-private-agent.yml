@@ -55,8 +55,9 @@ AZ_PRIVATE_3: "{{ vpc.subnets[5].az }}"
 SN_PRIVATE_3: "{{ vpc.subnets[5].id }}"
 
 
-ELB_NAME: "Lightbend ConductR ELB {{ EC2_REGION }}"
-TAG_NAME: "Lightbend ConductR"
+ELB_NAME: "Lightbend Prod Suite ELB {{ EC2_REGION }}"
+TAG_NAME: "Lightbend Prod Suite"
+COMMERCIAL_CREDENTIALS: "commercial.credentials"
 CONDUCTR_PKG: "conductr_2.0.0_all.deb"
 CONDUCTR_CORE_WORK_DIR: "/tmp"
 CONDUCTR_AGENT_PKG: "conductr-agent_2.0.0_all.deb"

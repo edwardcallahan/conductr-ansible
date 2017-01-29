@@ -1,5 +1,5 @@
 ---
-- name: Create Lightbend EC2 network
+- name: Create Lightbend PS EC2 network
   hosts: localhost
   connection: local
   gather_facts: False
@@ -14,7 +14,7 @@
         module: ec2_vpc
         cidr_block: 10.0.0.0/16     
         resource_tags:
-          Name: "Lightbend Cluster VPC"
+          Name: "Lightbend ProdSuite Cluster VPC"
         region: "{{ EC2_REGION }}"
         dns_hostnames: yes
         dns_support: yes
@@ -127,7 +127,7 @@
     - name: Create ELB
       local_action:
         module: ec2_elb_lb
-        name: "Lightbend-ELB-{{ EC2_REGION }}"
+        name: "Lightbend-PS-ELB-{{ EC2_REGION }}"
         scheme: internet-facing
         security_group_ids: "{{ ingress_sg.group_id }}"
         state: present

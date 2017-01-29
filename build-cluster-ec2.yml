@@ -8,6 +8,8 @@
     - "{{ VARS_FILE }}"
 
   tasks:
+    - include: conductr/tasks/validate.yml
+
     - name: Launch Seed Node
       local_action:
         module: ec2
@@ -170,7 +172,9 @@
   tasks:
     - include: "bundle/tasks/config-elasticsearch.yml"
     - include: "bundle/tasks/config-haproxy.yml"
+    - include: "bundle/tasks/install-elasticsearch.yml"
     - include: "bundle/tasks/install-conductr-haproxy.yml"
+    - include: "bundle/tasks/install-kibana.yml"
     - include: "bundle/tasks/install-visualizer.yml"
 
     - pause:
