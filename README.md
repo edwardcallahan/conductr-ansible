@@ -1,18 +1,19 @@
-# Ansible Plays for Lightbend ConductR - Three Roles Edition
+# Ansible Plays for Lightbend Production Suite
 
 These plays and playbooks provision [Lightbend ConductR](https://conductr.lightbend.com) cluster nodes in AWS EC2 using [Ansible](http://www.ansible.com). ConductR is the project name for Service Orchestration in Lightbend Production Suite.
 
-**This version of ConductR Ansible is compatible with ConductR's Master branch, currently 2.0.x.**
+**This version of ConductR Ansible is compatible with ConductR's Master branch, currently 2.0.x.*
 For previous versions, use the corresponding branch, i.e. Conductr-Ansible 1.1.x branch for use with ConductR 1.1.x.
+Mesosphere DC/OS users should use the Marathon installation option also available from Lightbend, Inc.
 
-ConductR can be deployed to a simple 'flat' topology or to a production style private/public topology. For those just getting started, evaluating or otherwise wanting the easier option should use the flat approach. Only if you want the segmentation of private agents should you use the 'private-agents' version of the playbooks.
+ConductR can be deployed to a simple 'flat' topology or to a production style private/public topology. For those just getting started, evaluating or otherwise wanting the easier option should use the flat approach. In this mode, all nodes run the scheduler, executor and proxy. However, if you want the segmentation of private agents should you use the 'private-agents' version of the playbooks. In this mode, executor, scheduler and proxy run on dedicated nodes and only proxy nodes have public IP addresses.
 
 Use create-network-ec2.yml to setup a new VPC and create your cluster in the new VPC. You only need to provide your access keys and what region to execute in.
 The playbook outputs a vars file for use with the build-cluster-ec.yml. The username and password of 'commercial.properties' and the 'keypair' of generated vars file must be set prior to use.
 
 The playbook build-cluster-ec2.yml launches four nodes running both the core and the agent processes as well as a small template instance for imaging. Be certain to review and customize the vars file before building the cluster.
 
-The create-private-agent-network-ec2.yml playbook also configures a VPC for Production Suite. It also launches an admin bastion host for running the cluster plays from. This is required to manage private nodes that will not have a public ip address. The playbook build-private-agent-cluster-ec2.yml launches three core nodes, three private agents, three public agents and one small template node instances across three availability zones. Core, private agent, public agent and template nodes can be of different AMI, instance and volume size.
+The create-private-agent-network-ec2.yml playbook also configures a VPC for Production Suite. It also launches an admin bastion host for running the cluster creation plays from. This is required to manage private nodes that will not have a public IP address. The playbook build-private-agent-cluster-ec2.yml launches three core nodes, three private agents, three public agents and one small template node instances across three availability zones. Core, private agent, public agent and template nodes can be of different AMI, instance and volume size.
 
 ## Prerequisites
 
@@ -27,13 +28,13 @@ You'll need the following in order to use these playbooks.
 
 ## Setup
 
-ConductR is **not** provided by this repository. Visit the [Customer Portal](https://together.lightbend.com/) to download or [Lightbend.com](https://www.lightbend.com/products/conductr) to sign up to evaluate Lightbend Production Suite. Developers should use the [developer sandbox](https://www.lightbend.com/product/conductr/developer) to validate bundle packaging and execution.
+ConductR is **not** provided by this repository. Visit the [Customer Portal](https://together.lightbend.com/) to download or [Lightbend.com](https://www.lightbend.com/products/conductr) to sign up to evaluate Lightbend Production Suite. Developers should use the gratis [developer sandbox](https://www.lightbend.com/product/conductr/developer) to validate bundle packaging and execution.
 
-Obtain your Lightbend credentials from [Lightbend.com](https://www.lightbend.com/product/conductr/developer) and replace 'username' and 'password' in 'conductr/files/commercial.properties'.
+Obtain your Lightbend credentials from [Lightbend.com](https://www.lightbend.com/product/conductr/developer) and replace 'username' and 'password' in 'conductr/files/commercial.properties'. This is required to load bundles from the Lightbend bundle repository.
 
 Copy the ConductR deb (conductr_x.y.z-systemd_all.deb) *and* the ConductR-Agent deb (conductr-agent_x.y.z-systemd_all.deb) installation package into the `conductr/files` folder in your local copy of this repo. The installation package will be uploaded from this folder by the ConductR play to each of the EC2 instances for installation.
 
-Log into the AWS Console and select or generate a key pair in the region you intend to use. You'll need both the path to a local copy of the PEM file and the key pair name used in console to record in your vars file. Specify your 'keypair' in the vars file.
+Log into the AWS Console and select or generate a key pair in the region you intend to use. You'll need both the path to a local copy of the PEM file and the keypair name used in console to record in your vars file. Specify your 'keypair' name in the vars file.
 
 ## Running the Plays
 
