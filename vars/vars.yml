@@ -13,8 +13,8 @@ REMOTE_USER: "ubuntu"
 
 # This image is Ubuntu 16.04 LTS amd64 hvm:ebs-ssd in us-east-1
 # Must be changed to region local Ubuntu AMI for all other regions
-NODE_IMAGE: "ami-9dcfdb8a"
-TEMPLATE_IMAGE: "ami-9dcfdb8a"
+NODE_IMAGE: "ami-6edd3078"
+TEMPLATE_IMAGE: "ami-6edd3078"
 
 REMOTE_USER: "ubuntu"
 
@@ -39,9 +39,10 @@ SN_3: "subnet-xxxxxxxx"
 
 ELB_NAME: "Lightbend ConductR ELB {{ EC2_REGION }}"
 TAG_NAME: "Lightbend ConductR"
-CONDUCTR_PKG: "conductr_2.0.0_all.deb"
+COMMERCIAL_CREDENTIALS: "commercial.credentials"
+CONDUCTR_PKG: "conductr_2.0.0-systemd_all.deb"
 CONDUCTR_CORE_WORK_DIR: "/tmp"
-CONDUCTR_AGENT_PKG: "conductr-agent_2.0.0_all.deb"
+CONDUCTR_AGENT_PKG: "conductr-agent_2.0.0-systemd_all.deb"
 CONDUCTR_AGENT_WORK_DIR: "/tmp/conductr-agent"
 
 # ConductR 2.*:

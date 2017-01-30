@@ -1,0 +1,10 @@
+---
+- shell: "hostname -i"
+  register: host_ip
+
+- name: Load conductr-kibana
+  command: "conduct load --ip {{ host_ip.stdout }} conductr-kibana"
+
+- name: Run conductr-kibana
+  command: "conduct run --ip {{ host_ip.stdout}}  conductr-kibana"
+  ignore_errors: yes

@@ -22,7 +22,7 @@
         module: ec2_vpc
         cidr_block: 10.100.0.0/16
         resource_tags:
-          Name: "Lightbend ConductR VPC"
+          Name: "Lightbend Production Suite Cluster VPC"
         region: "{{ EC2_REGION }}"
         dns_hostnames: yes
         dns_support: yes
@@ -292,10 +292,11 @@
 
 - name: Setup Bastion
   hosts: bastion_public
-  user: "{{ REMOTE_USER }}"
+  user: "ubuntu"
   gather_facts: False
   sudo: True
 
   tasks:
+    - include: system/tasks/update-ubuntu.yml
     - include: ansible/tasks/setup-ansible.yml
     - include: system/tasks/upgrade-ubuntu.yml

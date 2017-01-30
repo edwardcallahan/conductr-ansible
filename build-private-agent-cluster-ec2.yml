@@ -12,6 +12,8 @@
     - "{{ VARS_FILE }}"
 
   tasks:
+    - include: conductr/tasks/validate.yml
+
     - name: Launch Core Seed
       local_action:
         module: ec2
@@ -260,6 +262,7 @@
           CORE_OBSERVER_PRIVATE_IP: "{{ groups.seeds_private[0] }}"
           CONDUCTR_AGENT_ROLES: "{{ CONDUCTR_PUBLIC_AGENT_ROLES }}"
     - include: bundle/tasks/config-haproxy.yml
+    - include: bundle/tasks/config-elasticsearch.yml
 
 - name: Install Bundles from the seed node
   hosts: seed_nodes
@@ -271,7 +274,9 @@
     - "{{ VARS_FILE }}"
 
   tasks:
+    - include: "bundle/tasks/install-elasticsearch.yml"
     - include: "bundle/tasks/install-conductr-haproxy.yml"
+    - include: "bundle/tasks/install-kibana.yml"
     - include: "bundle/tasks/install-visualizer.yml"
 
 - name: Setup Template Node

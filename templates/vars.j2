@@ -17,7 +17,6 @@ BASTION_IMAGE: "ami-6edd3078"
 NODE_IMAGE: "ami-6edd3078"
 TEMPLATE_IMAGE: "ami-6edd3078"
 
-ADMIN_SG: "{{ admin_sg.group_id }}"
 BASTION_INSTANCE_TYPE: "t2.large"
 BASTION_VOL_TYPE: "gp2"
 BASTION_VOL_SIZE: 100
@@ -38,9 +37,10 @@ SN_3: "{{ vpc.subnets[2].id }}"
 
 ELB_NAME: "{{ elb.elb.name }}"
 TAG_NAME: "Lightbend ConductR"
-CONDUCTR_PKG: "conductr_2.0.0_all.deb"
+COMMERCIAL_CREDENTIALS: "commercial.credentials"
+CONDUCTR_PKG: "conductr_2.0.0-systemd_all.deb"
 CONDUCTR_CORE_WORK_DIR: "/tmp"
-CONDUCTR_AGENT_PKG: "conductr-agent_2.0.0_all.deb"
+CONDUCTR_AGENT_PKG: "conductr-agent_2.0.0-systemd_all.deb"
 CONDUCTR_AGENT_WORK_DIR: "/tmp/conductr-agent"
 
 # ConductR 2.*:

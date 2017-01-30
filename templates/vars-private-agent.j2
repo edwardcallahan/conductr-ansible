@@ -32,7 +32,7 @@ TEMPLATE_VOL_SIZE: 10
 
 CORE_SG: "{{ core_sg.group_id }}"
 INGRESS_SG: "{{ ingress_sg.group_id }}"
-PRIVATE_AGENT_SG: "{{ private_sg.group_id }}"
+PRIVATE_AGENT_SG: "{{ private_agent_sg.group_id }}"
 PUBLIC_AGENT_SG: "{{ public_agent_sg.group_id }}"
 
 AZ_PUBLIC_1: "{{ vpc.subnets[0].az }}"
@@ -49,10 +49,11 @@ AZ_PRIVATE_3: "{{ vpc.subnets[5].az }}"
 SN_PRIVATE_3 "{{ vpc.subnets[5].id }}"
 
 ELB_NAME: "{{ elb.elb.name }}"
-TAG_NAME: "Lightbend ConductR"
-CONDUCTR_PKG: "conductr_2.0.0_all.deb"
+TAG_NAME: "Lightbend Production Suite"
+COMMERCIAL_CREDENTIALS: "commercial.credentials"
+CONDUCTR_PKG: "conductr-agent_2.0.0-systemd_all.deb"
 CONDUCTR_CORE_WORK_DIR: "/tmp"
-CONDUCTR_AGENT_PKG: "conductr-agent_2.0.0_all.deb"
+CONDUCTR_AGENT_PKG: "conductr-agent_2.0.0-systemd_all.deb"
 CONDUCTR_AGENT_WORK_DIR: "/tmp/conductr-agent"
 
 # ConductR 2.*:
