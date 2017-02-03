@@ -160,6 +160,8 @@
     - include: conductr/tasks/install-agent.yml
       vars:
           CORE_OBSERVER_PRIVATE_IP: "{{ groups.seeds_private[0] }}"
+    - include: bundle/tasks/config-elasticsearch.yml
+    - include: bundle/tasks/config-haproxy.yml
 
 - name: Install ConductR HAProxy from the seed node
   hosts: seeds_public
@@ -170,12 +172,10 @@
     - "{{ VARS_FILE }}"
 
   tasks:
-    - include: "bundle/tasks/config-elasticsearch.yml"
-    - include: "bundle/tasks/config-haproxy.yml"
-    - include: "bundle/tasks/install-elasticsearch.yml"
-    - include: "bundle/tasks/install-conductr-haproxy.yml"
-    - include: "bundle/tasks/install-kibana.yml"
-    - include: "bundle/tasks/install-visualizer.yml"
+    - include: bundle/tasks/install-elasticsearch.yml
+    - include: bundle/tasks/install-conductr-haproxy.yml
+    - include: bundle/tasks/install-kibana.yml
+    - include: bundle/tasks/install-visualizer.yml
 
     - pause:
         prompt: "Allowing instances to become healthy. Abort to not launch template instance, requiring manual registration w/ELB"
@@ -187,13 +187,29 @@
   gather_facts: False
   sudo: True
 
+  vars:
+  # These are the default ConductR roles - these roles may be overridden within the VARS_FILE
+      CONDUCTR_AGENT_ROLES:
+        - web
+        - haproxy
+        - elasticsearch
+
   vars_files:
     - "{{ VARS_FILE }}"
 
   tasks:
     - include: python/tasks/main.yml
     - include: java/tasks/main.yml
+    - include: docker/tasks/main.yml
+      when: "{{ INSTALL_DOCKER }} == true"
     - include: ntp/tasks/main.yml
+    - include: haproxy/tasks/main.yml
+    - include: conductr/tasks/install-core.yml
+    - include: conductr/tasks/install-agent.yml
+      vars:
+              CORE_OBSERVER_PRIVATE_IP: "{{ groups.seeds_private[0] }}"
+    - include: bundle/tasks/config-elasticsearch.yml
+    - include: bundle/tasks/config-haproxy.yml
 
 - name: Register ConductR with ELB
   hosts: nodes_public

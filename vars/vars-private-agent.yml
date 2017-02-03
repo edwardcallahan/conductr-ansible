@@ -57,7 +57,7 @@ SN_PRIVATE_3: "{{ vpc.subnets[5].id }}"
 
 ELB_NAME: "Lightbend Prod Suite ELB {{ EC2_REGION }}"
 TAG_NAME: "Lightbend Prod Suite"
-COMMERCIAL_CREDENTIALS: "commercial.credentials"
+COMMERCIAL_CREDENTIALS: "my.commercial.credentials"
 CONDUCTR_PKG: "conductr_2.0.0-systemd_all.deb"
 CONDUCTR_CORE_WORK_DIR: "/tmp"
 CONDUCTR_AGENT_PKG: "conductr-agent_2.0.0-systemd_all.deb"

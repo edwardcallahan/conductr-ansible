@@ -2,7 +2,7 @@
 # Must be set to the key pair name of the file passed to playbook
 KEYPAIR: "Key Pair Name"
 CONDUCTR_VERSION: "2.0.0"
-EC2_REGION: "us-east-1"
+EC2_REGION: "{{ EC2_REGION }}"
 EC2_AZ_1: "a"
 EC2_AZ_2: "b"
 EC2_AZ_3: "c"
@@ -50,7 +50,7 @@ SN_PRIVATE_3 "{{ vpc.subnets[5].id }}"
 
 ELB_NAME: "{{ elb.elb.name }}"
 TAG_NAME: "Lightbend Production Suite"
-COMMERCIAL_CREDENTIALS: "commercial.credentials"
+COMMERCIAL_CREDENTIALS: "my.commercial.credentials"
 CONDUCTR_PKG: "conductr-agent_2.0.0-systemd_all.deb"
 CONDUCTR_CORE_WORK_DIR: "/tmp"
 CONDUCTR_AGENT_PKG: "conductr-agent_2.0.0-systemd_all.deb"

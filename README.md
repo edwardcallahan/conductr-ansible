@@ -1,4 +1,4 @@
-# Ansible Plays for Lightbend ConductR - Three Roles Edition
+# Ansible Plays for Lightbend ConductR
 
 These plays and playbooks provision [Lightbend ConductR](https://conductr.lightbend.com) cluster nodes in AWS EC2 using [Ansible](http://www.ansible.com). ConductR is the project name for Service Orchestration in Lightbend Production Suite.
 
@@ -18,6 +18,7 @@ The create-private-agent-network-ec2.yml playbook also configures a VPC for Prod
 
 You'll need the following in order to use these playbooks.
 
+* Lightbend credentials. Obtain for free from [lightbend.com](https://www.lightbend.com/product/conductr/developer). Apply your credentials to `conductr/files/commercial.credentials.template` and save as `conductr/files/commercial.credentials`.
 * Access Key and Secret for an AWS Account with permissions to admin EC2.
 * Ansible installed on a controller host. The faster the controller host's connection to the chosen EC2 region, the faster nodes will launch. Ssh access to a small to medium instance in the same AWS region as your cluster works well. See Ansible Setup below for further details.
 * An AWS Key Pair (PEM file) downloaded to the Ansible controller host.
@@ -143,6 +144,7 @@ Setup Ansible from source using git and pip.
 ```bash
 git clone https://github.com/ansible/ansible.git --recursive
 sudo apt-get install python-setuptools autoconf g++ python2.7-dev
+sudo apt-get install build-essential libssl-dev libffi-dev python-dev
 sudo easy_install pip
 sudo pip install paramiko PyYAML Jinja2 httplib2 boto
 ```

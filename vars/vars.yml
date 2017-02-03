@@ -39,7 +39,7 @@ SN_3: "subnet-xxxxxxxx"
 
 ELB_NAME: "Lightbend ConductR ELB {{ EC2_REGION }}"
 TAG_NAME: "Lightbend ConductR"
-COMMERCIAL_CREDENTIALS: "commercial.credentials"
+COMMERCIAL_CREDENTIALS: "my.commercial.credentials"
 CONDUCTR_PKG: "conductr_2.0.0-systemd_all.deb"
 CONDUCTR_CORE_WORK_DIR: "/tmp"
 CONDUCTR_AGENT_PKG: "conductr-agent_2.0.0-systemd_all.deb"
