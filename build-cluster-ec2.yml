@@ -207,7 +207,7 @@
     - include: conductr/tasks/install-core.yml
     - include: conductr/tasks/install-agent.yml
       vars:
-              CORE_OBSERVER_PRIVATE_IP: "{{ groups.seeds_private[0] }}"
+              CORE_OBSERVER_PRIVATE_IP: "$CORE_PRIVATE_IP$"
     - include: bundle/tasks/config-elasticsearch.yml
     - include: bundle/tasks/config-haproxy.yml
 
