@@ -205,7 +205,7 @@
 
   tasks:
     - include: python/tasks/main.yml
-    - include: java/tasks/main.yml
+    - include: java/tasks/openjdk.yml
     - include: ntp/tasks/main.yml
     - include: conductr/tasks/install-core.yml
 
@@ -226,7 +226,7 @@
 
   tasks:
     - include: python/tasks/main.yml
-    - include: java/tasks/main.yml
+    - include: java/tasks/openjdk.yml
     - include: ntp/tasks/main.yml
     - include: docker/tasks/main.yml
       when: "{{ INSTALL_DOCKER }} == true"
@@ -252,7 +252,7 @@
 
   tasks:
     - include: python/tasks/main.yml
-    - include: java/tasks/main.yml
+    - include: java/tasks/openjdk.yml
     - include: ntp/tasks/main.yml
     - include: docker/tasks/main.yml
       when: "{{ INSTALL_DOCKER }} == true"
@@ -290,7 +290,7 @@
 
   tasks:
     - include: python/tasks/main.yml
-    - include: java/tasks/main.yml
+    - include: java/tasks/openjdk.yml
     - include: ntp/tasks/main.yml
 
 - name: Register Public Agent Nodes with ELB

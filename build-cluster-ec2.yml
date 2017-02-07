@@ -151,7 +151,7 @@
 
   tasks:
     - include: python/tasks/main.yml
-    - include: java/tasks/main.yml
+    - include: java/tasks/openjdk.yml
     - include: docker/tasks/main.yml
       when: "{{ INSTALL_DOCKER }} == true"
     - include: ntp/tasks/main.yml
@@ -199,7 +199,7 @@
 
   tasks:
     - include: python/tasks/main.yml
-    - include: java/tasks/main.yml
+    - include: java/tasks/openjdk.yml
     - include: docker/tasks/main.yml
       when: "{{ INSTALL_DOCKER }} == true"
     - include: ntp/tasks/main.yml
