@@ -42,12 +42,7 @@
 
     - name: Add seed to seeds_nodes
       add_host:
-        groupname: "seed_nodes"
-        hostname: "{{ ec2.instances[0].private_ip }}"
-
-    - name: Add private ip to nodes
-      add_host:
-        groupname: "core_nodes"
+        groupname: "seeds_private"
         hostname: "{{ ec2.instances[0].private_ip }}"
 
     - name: Launch Core Nodes
@@ -109,7 +104,7 @@
         - "{{ SN_PRIVATE_2 }}"
         - "{{ SN_PRIVATE_3 }}"
 
-    - name: Add ip to private_nodes
+    - name: Add ip to private_agents
       add_host:
         groupname: "private_agents"
         hostname: "{{ item.instances[0].private_ip }}"
@@ -194,6 +189,21 @@
        state: started
       with_items: "{{ ec2.results }}"
 
+- name: Setup Seed Node
+  hosts: seeds_private
+  user: "{{ REMOTE_USER }}"
+  gather_facts: False
+  sudo: True
+
+  vars_files:
+    - "{{ VARS_FILE }}"
+
+  tasks:
+    - include: python/tasks/main.yml
+    - include: java/tasks/openjdk.yml
+    - include: ntp/tasks/main.yml
+    - include: conductr/tasks/install-core-seed.yml
+
 - name: Setup Core Nodes
   hosts: core_nodes
   user: "{{ REMOTE_USER }}"
@@ -208,11 +218,9 @@
     - include: java/tasks/openjdk.yml
     - include: ntp/tasks/main.yml
     - include: conductr/tasks/install-core.yml
-      VARS:
-          CORE_SEED_PRIVATE_IP: "{{ groups.seed_nodes[0] }}"
 
 - name: Setup Private Nodes
-  hosts: private_nodes
+  hosts: private_agents
   user: "{{ REMOTE_USER }}"
   gather_facts: False
   sudo: True
@@ -267,7 +275,7 @@
     - include: bundle/tasks/config-elasticsearch.yml
 
 - name: Install Bundles from the seed node
-  hosts: seed_nodes
+  hosts: seeds_private
   user: "{{ REMOTE_USER }}"
   gather_facts: True
   sudo: True
