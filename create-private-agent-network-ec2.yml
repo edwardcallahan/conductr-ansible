@@ -113,11 +113,6 @@
         vpc_id: "{{ vpc.vpc_id }}"
         region: "{{ vpc.vpc.region }}"
         rules:
-          # Admin SSH
-          - proto: tcp
-            from_port: 22
-            to_port: 22
-            group_id: "{{ admin_sg.group_id}}"
           # HTTP application endpoints
           - proto: tcp
             from_port: 9000
@@ -144,11 +139,6 @@
         vpc_id: "{{ vpc.vpc_id }}"
         region: "{{ vpc.vpc.region }}"
         rules:
-          # Admin SSH
-          - proto: tcp
-            from_port: 22
-            to_port: 22
-            group_id: "{{ admin_sg.group_id }}"
           # Proxy access from ConductR public agents
           - proto: tcp
             from_port: 10000
@@ -161,15 +151,10 @@
       local_action:
         module: ec2_group
         name: Lightbend Core Node SG
-        description: SG for Core Nodes
+        description: Lightbend Core Node SG
         vpc_id: "{{ vpc.vpc_id }}"
         region: "{{ vpc.vpc.region }}"
         rules:
-          # Admin SSH
-          - proto: tcp
-            from_port: 22
-            to_port: 22
-            group_id: "{{ admin_sg.group_id }}"
           # Akka Remoting, Control Protocol, Bundle Stream Server,
           # Status Server and Service Locator
           # From Public Agent to Core
@@ -187,6 +172,18 @@
         state: present
       register: core_sg
 
+    - name: Admin SSH Core Nodes
+      local_action:
+        module: ec2_group
+        name: Lightbend Core Node SG
+        description: Lightbend Core Node SG
+        region: "{{ vpc.vpc.region }}"
+        rules:
+          - proto: tcp
+            from_port: 22
+            to_port: 22
+            group_id: "{{ admin_sg.group_id}}"
+
     - name: Akka Remoting Private Agents
       local_action:
         module: ec2_group
@@ -194,11 +191,22 @@
         description: Lightbend Private Agent SG
         region: "{{ vpc.vpc.region }}"
         rules:
-          # Agent Remote Port
           - proto: tcp
             from_port: 2552
             to_port: 2552
             group_id: "{{ core_sg.group_id}}"
+
+    - name: Admin SSH Private Agents
+      local_action:
+        module: ec2_group
+        name: Lightbend Private Agent SG
+        description: Lightbend Private Agent SG
+        region: "{{ vpc.vpc.region }}"
+        rules:
+          - proto: tcp
+            from_port: 22
+            to_port: 22
+            group_id: "{{ admin_sg.group_id}}"
 
     - name: Akka Remoting Public Agents
       local_action:
@@ -207,11 +215,22 @@
         description: Lightbend Public Agent SG
         region: "{{ vpc.vpc.region }}"
         rules:
-          # Agent Remote Port
           - proto: tcp
             from_port: 2552
             to_port: 2552
             group_id: "{{ core_sg.group_id}}"
+
+    - name: Admin SSH Public Agents
+      local_action:
+        module: ec2_group
+        name: Lightbend Public Agent SG
+        description: Lightbend Public Agent SG
+        region: "{{ vpc.vpc.region }}"
+        rules:
+          - proto: tcp
+            from_port: 22
+            to_port: 2
+            group_id: "{{ admin_sg.group_id}}"
 
     - name: Launch Bastion Node
       local_action:
@@ -298,5 +317,7 @@
 
   tasks:
     - include: system/tasks/update-ubuntu.yml
+    - include: python/tasks/main.yml
+    - include: ntp/tasks/main.yml
     - include: ansible/tasks/setup-ansible.yml
     - include: system/tasks/upgrade-ubuntu.yml

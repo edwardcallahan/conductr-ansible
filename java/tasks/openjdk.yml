@@ -1,4 +1,3 @@
 ---
 - name: Install OpenJDK 8 JRE
   apt: name=openjdk-8-jre state=latest
-c

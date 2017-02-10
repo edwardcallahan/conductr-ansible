@@ -157,6 +157,8 @@
     - include: ntp/tasks/main.yml
     - include: haproxy/tasks/main.yml
     - include: conductr/tasks/install-core.yml
+      VARS:
+          CORE_SEED_PRIVATE_IP: "{{ groups.seeds_private[0] }}"
     - include: conductr/tasks/install-agent.yml
       vars:
           CORE_OBSERVER_PRIVATE_IP: "{{ groups.seeds_private[0] }}"
@@ -205,6 +207,8 @@
     - include: ntp/tasks/main.yml
     - include: haproxy/tasks/main.yml
     - include: conductr/tasks/install-core.yml
+      VARS:
+          CORE_SEED_PRIVATE_IP: "{{ groups.seeds_private[0] }}"
     - include: conductr/tasks/install-agent.yml
       vars:
               CORE_OBSERVER_PRIVATE_IP: "$CORE_PRIVATE_IP$"

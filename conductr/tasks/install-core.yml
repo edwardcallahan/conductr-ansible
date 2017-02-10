@@ -41,11 +41,10 @@
   become: yes
   become_method: sudo
 
-- shell: 'echo --seed {{ groups.seeds_private[0]}}:9004 | sudo tee -a /usr/share/conductr/conf/conductr.ini'
-  with_items: "{{ groups.seeds_public }}"
+- shell: 'echo --seed {{ CORE_SEED_PRIVATE_IP }}:9004 | sudo tee -a /usr/share/conductr/conf/conductr.ini'
   become: yes
   become_method: sudo
-  when: item != "{{ inventory_hostname }}"
+  when: "{{ host_ip.stdout }} != {{ CORE_SEED_PRIVATE_IP }}"
 
 - shell: 'echo -Dakka.loglevel=debug | sudo tee -a /usr/share/conductr/conf/conductr.ini'
   become: yes

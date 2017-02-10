@@ -208,6 +208,8 @@
     - include: java/tasks/openjdk.yml
     - include: ntp/tasks/main.yml
     - include: conductr/tasks/install-core.yml
+      VARS:
+          CORE_SEED_PRIVATE_IP: "{{ groups.seed_nodes[0] }}"
 
 - name: Setup Private Nodes
   hosts: private_nodes
@@ -232,7 +234,7 @@
       when: "{{ INSTALL_DOCKER }} == true"
     - include: conductr/tasks/install-agent.yml
       vars:
-          CORE_OBSERVER_PRIVATE_IP: "{{ groups.seeds_private[0] }}"
+          CORE_OBSERVER_PRIVATE_IP: "{{ groups.seed_nodes[0] }}"
           CONDUCTR_AGENT_ROLES: "{{ CONDUCTR_PRIVATE_AGENT_ROLES }}"
     - include: bundle/tasks/config-elasticsearch.yml
 
@@ -259,7 +261,7 @@
     - include: haproxy/tasks/main.yml
     - include: conductr/tasks/install-agent.yml
       vars:
-          CORE_OBSERVER_PRIVATE_IP: "{{ groups.seeds_private[0] }}"
+          CORE_OBSERVER_PRIVATE_IP: "{{ groups.seed_nodes[0] }}"
           CONDUCTR_AGENT_ROLES: "{{ CONDUCTR_PUBLIC_AGENT_ROLES }}"
     - include: bundle/tasks/config-haproxy.yml
     - include: bundle/tasks/config-elasticsearch.yml
