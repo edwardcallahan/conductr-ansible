@@ -274,6 +274,28 @@
     - include: bundle/tasks/config-haproxy.yml
     - include: bundle/tasks/config-elasticsearch.yml
 
+- name: Setup Template Node
+  hosts: template_nodes
+  user: "{{ REMOTE_USER }}"
+  gather_facts: False
+  sudo: True
+
+  vars_files:
+    - "{{ VARS_FILE }}"
+
+  tasks:
+    - include: python/tasks/main.yml
+    - include: java/tasks/openjdk.yml
+    - include: ntp/tasks/main.yml
+    - include: docker/tasks/main.yml
+      when: "{{ INSTALL_DOCKER }} == true"
+    - include: conductr/tasks/install-agent.yml
+      vars:
+          CORE_OBSERVER_PRIVATE_IP: "127.0.0.1"
+          CONDUCTR_AGENT_ROLES: "{{ CONDUCTR_PUBLIC_AGENT_ROLES }}"
+    - include: bundle/tasks/config-haproxy.yml
+    - include: bundle/tasks/config-elasticsearch.yml
+
 - name: Install Bundles from the seed node
   hosts: seeds_private
   user: "{{ REMOTE_USER }}"
@@ -288,20 +310,6 @@
     - include: "bundle/tasks/install-conductr-haproxy.yml"
     - include: "bundle/tasks/install-kibana.yml"
     - include: "bundle/tasks/install-visualizer.yml"
-
-- name: Setup Template Node
-  hosts: template_nodes
-  user: "{{ REMOTE_USER }}"
-  gather_facts: False
-  sudo: True
-
-  vars_files:
-    - "{{ VARS_FILE }}"
-
-  tasks:
-    - include: python/tasks/main.yml
-    - include: java/tasks/openjdk.yml
-    - include: ntp/tasks/main.yml
 
 - name: Register Public Agent Nodes with ELB
   hosts: public_agents
