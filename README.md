@@ -62,7 +62,7 @@ Optionally specify what [EC2 region](http://docs.aws.amazon.com/general/latest/g
 ansible-playbook create-network-ec2.yml -e "EC2_REGION=eu-west-1"
 ```
 
-To create a network with private and public agent in differnet subnets run the `create-private-agent-network' playbook. This playbook requires a keypair setting for launching a bastion host
+To create a network with private and public agent in different subnets run the `create-private-agent-network' playbook. This playbook requires a keypair setting for launching a bastion host
 
 ```bash
 ansible-playbook create-private-agent-network-ec2.yml  -e "KEYPAIR={{ keyname }}" --private-key /path/to/{{keypair}}
@@ -82,11 +82,19 @@ All the nodes will be assigned a public ip address so you can ssh into nodes usi
 ansible-playbook build-cluster-ec2.yml -e "VARS_FILE=vars/{{EC2_REGION}}_vars.yml" --private-key /path/to/{{keypair}}
 ```
 
-or if you are using the private agent network
+or if you are using the private agent network. Be certain to run this from a the bastion node so it has access to the private nodes. Use nohup if needed
 
 ```bash
-ansible-playbook build-private-agent-cluster-ec2.yml -e "VARS_FILE=vars/{{EC2_REGION}}_vars.yml" --private-key /path/to/{{keypair}}
+nohup ansible-playbook build-private-agent-cluster-ec2.yml -e "VARS_FILE=vars/{{EC2_REGION}}_vars.yml" --private-key /path/to/{{keypair}} > build_cluster.out &_
 ```
+
+### Checklist
+
+* Credentials in `conductr/files/my.commercial.credenteials"
+* ConductR core and agent packages in `conductr/files`
+* Private key file *and* matching name in vars file
+* Update AMI to latest for region
+
 
 ## Accessing cluster applications
 

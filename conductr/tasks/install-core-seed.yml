@@ -41,10 +41,6 @@
   become: yes
   become_method: sudo
 
-- shell: 'echo --seed {{ groups.seeds_private[0] }}:9004 | sudo tee -a /usr/share/conductr/conf/conductr.ini'
-  become: yes
-  become_method: sudo
-
 - shell: 'echo -Dakka.loglevel=debug | sudo tee -a /usr/share/conductr/conf/conductr.ini'
   become: yes
   become_method: sudo

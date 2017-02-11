@@ -3,6 +3,30 @@
   become: yes
   become_method: sudo
 
+- name: Install install
+  apt: name=install state=latest
+
+- name: Install build-essential
+  apt: name=build-essential state=latest
+
+- name: Install libssl-dev
+  apt: name=libssl-dev state=latest
+
+- name: Install libffi-dev
+  apt: name=libffi-dev state=latest
+
+- name: Install python2.7-dev
+  apt: name=python2.7-dev state=latest
+
+- name: Install python-setuptools
+  apt: name=python-setuptools state=latest
+
+- name: Install autoconf
+  apt: name=autoconf state=latest
+
+- name: Install g++
+  apt: name=g++ state=latest
+
 - command: pip install ansible paramiko PyYAML Jinja2 httplib2 boto
   become: yes
   become_method: sudo
@@ -14,3 +38,11 @@
 - shell: 'echo -e "[local]\n127.0.0.1" | sudo tee -a /etc/ansible/hosts'
   become: yes
   become_method: sudo
+
+- command: git clone https://github.com/typesafehub/conductr-ansible.git
+
+- name: Copy ConductR
+  synchronize: src=conductr/files/{{ CONDUCTR_PKG }} dest=/home/ubuntu/conductr-ansible/conductr/files
+
+ - name: Copy ConductR-Agent
+   synchronize: src=conductr/files/{{ CONDUCTR_AGENT_PKG }} dest=/home/ubuntu/conductr-ansible/conductr/files
