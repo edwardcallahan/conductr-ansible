@@ -10,7 +10,7 @@ ConductR can be deployed to a simple 'flat' topology or to a production style pr
 Use create-network-ec2.yml to setup a new VPC and create your cluster in the new VPC. This is the flat topology. You only need to provide your access keys and what region to execute in.
 The playbook outputs a vars file for use with the build-cluster-ec.yml. The username and password of 'commercial.properties' and the 'keypair' of generated vars file must be set prior to use.
 
-The playbook build-cluster-ec2.yml launches three clustered nodes running the core, the agent and HAProxy processes as well as a small template instance for imaging. Be certain to review and customize the vars file before building the cluster. 
+The playbook build-cluster-ec2.yml launches three clustered nodes running the core, the agent and HAProxy processes as well as a small template instance for imaging. Be certain to review and customize the vars file before building the cluster.
 
 The create-private-agent-network-ec2.yml playbook also configures a VPC for Production Suite. This is the public/agent path. It launches an admin bastion host for then running the build cluster plays from. This is required to manage private agent nodes that will not have a public ip address. The playbook build-private-agent-cluster-ec2.yml launches three core nodes, three private agents, three public agents and one small template node instances across three availability zones. Core, private agent, public agent and template nodes can be of different AMI, instance and volume size.
 
