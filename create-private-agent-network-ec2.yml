@@ -321,7 +321,6 @@
   tasks:
     - include: python/tasks/main.yml
     - include: system/tasks/update-ubuntu.yml
-    - include: python/tasks/main.yml
     - include: ntp/tasks/main.yml
     - include: ansible/tasks/setup-ansible.yml
     - include: system/tasks/upgrade-ubuntu.yml
