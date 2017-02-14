@@ -315,9 +315,12 @@
   gather_facts: False
   sudo: True
 
+ vars:
+   REMOTE_USER: "ubuntu"
+
   tasks:
-    - include: system/tasks/update-ubuntu.yml
     - include: python/tasks/main.yml
+    - include: system/tasks/update-ubuntu.yml
     - include: ntp/tasks/main.yml
     - include: ansible/tasks/setup-ansible.yml
     - include: system/tasks/upgrade-ubuntu.yml

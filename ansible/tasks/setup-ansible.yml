@@ -44,5 +44,5 @@
 - name: Copy ConductR
   synchronize: src=conductr/files/{{ CONDUCTR_PKG }} dest=/home/ubuntu/conductr-ansible/conductr/files
 
- - name: Copy ConductR-Agent
-   synchronize: src=conductr/files/{{ CONDUCTR_AGENT_PKG }} dest=/home/ubuntu/conductr-ansible/conductr/files
+- name: Copy ConductR-Agent
+  synchronize: src=conductr/files/{{ CONDUCTR_AGENT_PKG }} dest=/home/ubuntu/conductr-ansible/conductr/files
