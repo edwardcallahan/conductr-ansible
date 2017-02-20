@@ -50,7 +50,7 @@ Disable Ansible host key checking so that the play doesn't need you to accept th
 export ANSIBLE_HOST_KEY_CHECKING=False
 ```
 
-Runing the create network play without any arguments defaults to executing in the EC2 region of us-east-1.
+Running the create network play without any arguments defaults to executing in the EC2 region of us-east-1.
 
 ```bash
 ansible-playbook create-network-ec2.yml
@@ -90,10 +90,12 @@ nohup ansible-playbook build-private-agent-cluster-ec2.yml -e "VARS_FILE=vars/{{
 
 ### Checklist
 
+A few things to double check before running playbooks:
 * Credentials in `conductr/files/my.commercial.credenteials"
 * ConductR core and agent packages in `conductr/files`
 * Private key file *and* matching name in vars file
-* Update AMI to latest for region
+* Update AMIs to latest *and* local to target region
+* Customize plays. Include additional bundle config plays, use Oracle JDK, increase disk sizes or not install Docker for example.
 
 
 ## Accessing cluster applications

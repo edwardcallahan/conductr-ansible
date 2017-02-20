@@ -1,0 +1,8 @@
+---
+- command: mkdir -p /var/lib/cassandra-v3
+  become: yes
+  become_method: sudo
+
+- command: chown conductr /var/lib/cassandra-v3
+  become: yes
+  become_method: sudo
