@@ -1,0 +1,61 @@
+---
+- name: Provision and configure a bastion admin node
+  hosts: localhost
+  connection: local
+  gather_facts: False
+
+  vars_files:
+    - "{{ VARS_FILE }}"
+
+  tasks:
+    - name: Launch Bastion Node
+      local_action:
+        module: ec2
+        image: "{{ BASTION_IMAGE }}"
+        instance_type: "{{ BASTION_INSTANCE_TYPE }}"
+        keypair: "{{ KEYPAIR }}"
+        region: "{{ EC2_REGION }}"
+        group_id: "{{ BASTION_SG }}"
+        vpc_subnet_id: "{{ BASTION_SN }}"
+        assign_public_ip: yes
+        instance_tags:
+          Name: "Lightbend Admin Bastion"
+          Role: Bastion Node
+        count: 1
+        volumes:
+          - device_name: /dev/sda1
+            device_type: "{{ BASTION_VOL_TYPE }}"
+            volume_size: "{{ BASTION_VOL_SIZE }}"
+            delete_on_termination: true
+        wait: yes
+      register: ec2
+
+    - name: Add to bastion_public
+      add_host:
+        groupname: "bastion_public"
+        hostname: "{{ ec2.instances[0].public_ip }}"
+
+    - name: Wait for SSH to come up
+      wait_for:
+        host: "{{ groups.bastion_public[0] }}"
+        port: 22
+        delay: 60
+        timeout: 320
+        state: started
+
+- name: Setup Bastion
+  hosts: bastion_public
+  user: "ubuntu"
+  gather_facts: False
+  sudo: True
+
+  vars:
+   REMOTE_USER: "ubuntu"
+
+  tasks:
+    - include: python/tasks/main.yml
+    - include: system/tasks/update-ubuntu.yml
+    - include: ntp/tasks/main.yml
+    - include: ansible/tasks/setup-ansible.yml
+    - include: conductr/tasks/install-cli-pip.yml
+    - include: system/tasks/upgrade-ubuntu.yml

@@ -1,0 +1,16 @@
+---
+- name: Setup Python3 Pip
+  apt: name={{ item }} state=latest
+  with_items:
+    - python3-pip
+
+- name: Setup for CLI
+  apt: name={{ item }} state=latest
+  with_items:
+    - python-dev
+    - python-setuptools
+
+- name: Install ConductR CLI
+  command: pip3 install -U conductr-cli requests
+  become: yes
+  become_method: sudo
