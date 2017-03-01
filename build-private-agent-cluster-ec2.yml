@@ -27,7 +27,7 @@
         region: "{{ EC2_REGION }}"
         group_id: "{{ CORE_SG }}"
         vpc_subnet_id: "{{ SN_PRIVATE_1 }}"
-        assign_public_ip: yes
+        assign_public_ip: no
         instance_tags:
           Name: "{{ TAG_NAME }} Core"
           Role: Core
@@ -161,7 +161,7 @@
         region: "{{ EC2_REGION }}"
         group_id: "{{ PRIVATE_AGENT_SG }}"
         vpc_subnet_id: "{{ item }}"
-        assign_public_ip: yes
+        assign_public_ip: no
         instance_tags:
           Name: "{{ TAG_NAME }} Template"
           Role: Template
