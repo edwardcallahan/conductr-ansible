@@ -1,6 +1,10 @@
 #
-# This playbook requires ssh access to hosts private interfaces
-# Run from the bastion host of create playbook or equiv
+# Builds a cluster of nodes in a configuraion more typical of production workloads.
+# Core and agent nodes are not given public IPs and public agent nodes are used for proxying.
+# Recommended for advanced users
+#
+# This playbook requires SSH access to instances private interfaces
+# Run from the bastion host of create playbook or another node with access to the private network
 #
 ---
 - name: Provision and configure a ConductR cluster w/ Private Agents on AWS EC2

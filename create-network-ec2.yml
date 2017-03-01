@@ -1,4 +1,7 @@
 ---
+#
+# Creates a VPC network, subnets et al for use w/build-cluster-ec.yml
+#
 - name: Create Lightbend PS EC2 network
   hosts: localhost
   connection: local

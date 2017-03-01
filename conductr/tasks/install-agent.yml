@@ -40,9 +40,5 @@
   become: yes
   become_method: sudo
 
-- command: rm -rf /usr/share/conductr-agent/conf/core-nodes
-  become: yes
-  become_method: sudo
-
 - service: name=conductr-agent state=started
 

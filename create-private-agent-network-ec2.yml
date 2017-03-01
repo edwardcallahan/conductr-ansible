@@ -1,4 +1,8 @@
 ---
+#
+# Create a VPC network, subnets et al for use with build-private-agent-cluster.yml
+# Launch a bastion into VPC for running build-private-agent-cluster.yml with required private network access
+#
 - name: Create Lightbend EC2 network w/ Private Agents
   hosts: localhost
   connection: local

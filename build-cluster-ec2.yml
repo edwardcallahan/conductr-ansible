@@ -1,4 +1,8 @@
 ---
+#
+# Build a cluster of nodes running core, agent and proxy, all w/public IPs
+# Recommended for getting started, development and testing
+#
 - name: Provision and configure a ConductR cluster on AWS
   hosts: localhost
   connection: local

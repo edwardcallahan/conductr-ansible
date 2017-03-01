@@ -1,0 +1,47 @@
+---
+- name: Copy ConductR
+  synchronize: src=conductr/files/{{ CONDUCTR_PKG }} dest={{ CONDUCTR_CORE_WORK_DIR }}
+
+- name: Install ConductR
+  apt: deb={{ CONDUCTR_CORE_WORK_DIR }}/{{ CONDUCTR_PKG }}
+
+- command: rm {{ CONDUCTR_CORE_WORK_DIR }}/{{ CONDUCTR_PKG }}
+
+- name: Setup Python3 Pip
+  apt: name={{ item }} state=latest
+  with_items:
+    - python3-pip
+
+- name: Setup for CLI
+  apt: name={{ item }} state=latest
+  with_items:
+    - python-dev
+    - python-setuptools
+
+- shell: "hostname -i"
+  register: host_ip
+
+- name: Install ConductR CLI
+  command: pip3 install -U conductr-cli requests
+  become: yes
+  become_method: sudo
+
+- shell: 'echo -Dakka.loglevel=debug | sudo tee -a /usr/share/conductr/conf/conductr.ini'
+  become: yes
+  become_method: sudo
+
+- shell: "echo '$ModLoad imtcp' | sudo tee -a /etc/rsyslog.d/conductr.conf"
+  become: yes
+  become_method: sudo
+
+- shell: "echo '$InputTCPServerRun 514' | sudo tee -a /etc/rsyslog.d/conductr.conf"
+  become: yes
+  become_method: sudo
+
+- service: name=conductr state=stopped
+- service: name=rsyslog state=stopped
+
+- command: rm /usr/share/conductr/conf/seed-nodes
+  become: yes
+  become_method: sudo
+  ignore_errors: yes

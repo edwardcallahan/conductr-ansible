@@ -1,0 +1,104 @@
+---
+#
+# Build an image for use with https://github.com/typesafehub/conductr-cloudformation
+# Intended for use in releasing Production Suite to CloudFormation
+# Those looking to use Cloudformation to try ConductR should use Lightbend.com to use the Cloudformation template
+# to be available soon.
+#
+- name:
+  hosts: localhost
+  connection: local
+  gather_facts: False
+
+  vars_files:
+    - "{{ VARS_FILE }}"
+
+  tasks:
+    - name: Launch Bastion Node
+      local_action:
+        module: ec2
+        image: "{{ IMAGE }}"
+        instance_type: "{{ INSTANCE_TYPE }}"
+        keypair: "{{ KEYPAIR }}"
+        region: "{{ EC2_REGION }}"
+        group_id: "{{ SG }}"
+        vpc_subnet_id: "{{ SN }}"
+        assign_public_ip: yes
+        instance_tags:
+          Name: "Lightbend ProdSuite {{ CONDUCTR_VER }} CloudFormation AMI"
+        count: 1
+        volumes:
+          - device_name: /dev/sda1
+            device_type: "{{ VOL_TYPE }}"
+            volume_size: "{{ VOL_SIZE }}"
+            delete_on_termination: true
+        wait: yes
+      register: ec2
+
+    - name: Add to instance_public
+      add_host:
+        groupname: "instance_public"
+        hostname: "{{ ec2.instances[0].public_ip }}"
+
+    - name: Add to instance_id
+      add_host:
+        groupname: "instance_id"
+        hostname: "{{ ec2.instances[0].id }}"
+
+
+    - name: Wait for SSH to come up
+      wait_for:
+        host: "{{ groups.instance_public[0] }}"
+        port: 22
+        delay: 60
+        timeout: 320
+        state: started
+
+- name: Setup and Image Instance
+  hosts: instance_public
+  user: "ubuntu"
+  gather_facts: False
+  sudo: True
+
+  vars_files:
+    - "{{ VARS_FILE }}"
+
+  vars:
+   REMOTE_USER: "ubuntu"
+
+  tasks:
+    - include: python/tasks/main.yml
+
+    - name: Copy bundles.sh
+      synchronize: src=conductr/files/bundles.sh dest=/home/{{ REMOTE_USER }}
+
+    - name: Copy environment.sh
+      synchronize: src=conductr/files/environment.sh dest=/home/{{ REMOTE_USER }}
+
+    - name: Create folder for properties
+      file: path="/home/{{ REMOTE_USER }}/.lightbend" state=directory
+
+    - name: Copy credentials stub
+      synchronize: src=conductr/files/commercial.credentials.stub dest=/home/{{ REMOTE_USER }}/.lightbend/commercial.credentials
+
+    - name: Create folder for properties
+      file: path="/home/{{ REMOTE_USER }}/.lightbend/commercial.credentials" state=file
+
+    - name: setup_tools for easy_install
+      apt: name=python-setuptools state=latest
+
+    - name: Install cfn-init helper scripts
+      command: easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
+      become: yes
+      become_method: sudo
+
+    - include: ntp/tasks/main.yml
+    - include: java/tasks/openjdk.yml
+    - include: docker/tasks/main.yml
+    - include: haproxy/tasks/main.yml
+    - include: conductr/tasks/install-core-template.yml
+    - include: conductr/tasks/install-agent-template.yml
+    - include: bundle/tasks/config-elasticsearch.yml
+    - include: bundle/tasks/config-haproxy.yml
+    - include: bundle/tasks/config-cassandra.yml
+    - include: system/tasks/update-ubuntu.yml
