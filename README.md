@@ -109,7 +109,7 @@ The Visualizer sample application has been setup as an example. Start at least o
 
 ### Running many services on few ports
 
-For the most part, we only expose ports 80 and 443 to the world. We might have an interal ELB mapping to set of services on a different port, but we generally don't want to have many port mappings to manage. Hostnames and paths can be used to segment traffic between applications.
+For the most part, we only expose ports 80 and 443 to the world. We might have an internal ELB mapping to set of services on a different port, but we generally don't want to have many port mappings to manage. Hostnames and paths can be used to segment traffic between applications.
 
 For example to run a staging instance of an application on the same cluster and service endpoint port, use a [Configuration-Bundle](http://conductr.lightbend.com/docs/2.0.x/BundleConfiguration#Configuration-Bundles) with a staging hostname.
 
