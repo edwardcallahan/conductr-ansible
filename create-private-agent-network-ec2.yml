@@ -9,7 +9,7 @@
   gather_facts: False
 
   vars:
-    BASTION_IMAGE: "ami-6edd3078"
+    BASTION_IMAGE: "ami-4dd2575b"
     BASTION_INSTANCE_TYPE: "t2.large"
     BASTION_VOL_TYPE: "gp2"
     BASTION_VOL_SIZE: 100
@@ -233,7 +233,7 @@
         rules:
           - proto: tcp
             from_port: 22
-            to_port: 2
+            to_port: 22
             group_id: "{{ admin_sg.group_id}}"
 
     - name: Launch Bastion Node
@@ -319,7 +319,7 @@
   gather_facts: False
   sudo: True
 
- vars:
+  vars:
    REMOTE_USER: "ubuntu"
 
   tasks:
