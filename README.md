@@ -1,39 +1,67 @@
 # Ansible Plays for Lightbend ConductR
 
 These plays and playbooks provision [Lightbend ConductR](https://conductr.lightbend.com) cluster nodes in AWS EC2 using [Ansible](http://www.ansible.com). ConductR is the project name for Service Orchestration in Lightbend Production Suite.
+ The [ConductrR-Cloudformation](https://github.com/typesafehub/conductr-cloudformation) templates are another way to provision ConductR clusters on AWS EC2.
 
 **This version of ConductR Ansible is compatible with ConductR's Master branch, currently 2.0.x.**
 For previous versions, use the corresponding branch, i.e. Conductr-Ansible 1.1.x branch for use with ConductR 1.1.x.
 
-ConductR can be deployed to a simple 'flat' topology or to a production style private/public topology. For those just getting started, evaluating or otherwise wanting the easier option should use the flat approach. Only if you want the segmentation of private agents should you use the 'private-agents' version of the playbooks.
+There are three ConductR roles in ConductR cluster: core scheduler, execution agent and dynamic proxy. In a 3 node cluster it is recommended to run all three roles on all three nodes with each node in a different availability zone(AZ).
+ This is to provide for a 2 member quorum in the event of any one AZ not being available. The proxy nodes are the ingress point for services. The HAProxy on these nodes is dynamically updated by the conductr-haproxy service.
+ These proxy nodes are the instances used in the ELB load balancer and must be reachable by the ELB security group.
 
-Use create-network-ec2.yml to setup a new VPC and create your cluster in the new VPC. This is the flat topology. You only need to provide your access keys and what region to execute in.
-The playbook outputs a vars file for use with the build-cluster-ec.yml. The username and password of 'commercial.properties' and the 'keypair' of generated vars file must be set prior to use.
+For larger clusters, it is recommended to use different node images for each of these roles.
+ This enables the scaling of agent nodes without scaling the number of dynamic proxy and core scheduler nodes as these resources generally do not need to be scaled nearly as often. 
+ Production deployments will want the additional security of the private-agent model in which only the dynamic proxy nodes are given public IP addresses, keeping the ELB instances out of your private networks.
+ The private agent model requires an administrative bastion host for managing nodes with only private IPs.
 
-The playbook build-cluster-ec2.yml launches three clustered nodes running the core, the agent and HAProxy processes as well as a small template instance for imaging. Be certain to review and customize the vars file before building the cluster.
+Use `create-network-ec2.yml` to setup a new VPC within your EC2 account. This is the 'all in one' topology using three nodes running all roles with public IPs. You only need to provide your access keys and what region to execute in.
+The playbook outputs a vars file for use with the second playbook, `build-cluster-ec.yml`.
+The `username` and `password` in `my.commercial.properties` and the `keypair` in the generated vars file *must* be set.
 
-The create-private-agent-network-ec2.yml playbook also configures a VPC for Production Suite. This is the public/agent path. It launches an admin bastion host for then running the build cluster plays from. This is required to manage private agent nodes that will not have a public ip address. The playbook build-private-agent-cluster-ec2.yml launches three core nodes, three private agents, three public agents and one small template node instances across three availability zones. Core, private agent, public agent and template nodes can be of different AMI, instance and volume size.
+The playbook `build-cluster-ec2.yml` launches a three nodes running all three functions: the core scheduler,
+ the executioner agent and dynamic proxy. A fourth, small template instance is provided for imaging.
+ It is recommended to create an image of this node before terminating it. The AMI created can be used to quickly provision a
+ replacement node should one fail. Instances launched from the fully installed AMI require only minimal configuration to join this cluster.
+ Be certain to review and customize the vars file before building the cluster. In addition to matching the ConductR package
+ names with the version provided, the `username` and `password` in `my.commercial.properties` and the `keypair` in the generated vars file *must* be set.
+
+The `create-private-agent-network-ec2.yml` playbook also configures a VPC with separate security groups for public and and private agents.
+ It launches an admin bastion host for then running the build cluster playbook from.
+ The use of a bastion host is required to manage private agent nodes that will not have a public ip address.
+ The `playbook build-private-agent-cluster-ec2.yml` launches three core nodes, three private agents, three public agents
+ and one small template node instances across three availability zones. Core, private agent, public agent and template nodes can be of different AMI, instance and volume size.
+
+The `create-bastion.yml` playbook can be used to seed an administrative node into an existing subnet. This can be useful even
+ when using the '3x3' model with public IPs for faster bundle management by avoiding uploading over the WAN.
+
+The `create-cloudformation-ami.yml` playbook is for building AMIs for use with [ConductrR-Cloudformation](https://github.com/typesafehub/conductr-cloudformation).
 
 ## Prerequisites
 
 You'll need the following in order to use these playbooks.
 
-* Lightbend credentials. Obtain for free from [lightbend.com](https://www.lightbend.com/product/conductr/developer). Apply your credentials to `conductr/files/commercial.credentials.template` and save as `conductr/files/commercial.credentials`.
-* Access Key and Secret for an AWS Account with permissions to admin EC2.
-* Ansible installed on a controller host. The faster the controller host's connection to the chosen EC2 region, the faster files can be synchronized to the nodes. Ssh access to a small to medium "bastion" instance in the same AWS region as your cluster works well. See Ansible Setup below for further details.
+* Lightbend credentials. Obtain for free from [lightbend.com](https://www.lightbend.com/product/conductr/developer).
+ Apply your credentials to `conductr/files/commercial.credentials.template` and save as `conductr/files/my.commercial.credentials`.
+* Export the EC2 Access Key and Secret for an AWS Account with sufficient access within EC2 to create instances, security groups and other resources.
+* A copy of both the ConductR and ConductR-Agent deb installation package on the Ansible controller host in `conductr/files`.
+* Ansible installed on a controller host. The faster the controller host's connection to the chosen EC2 region, the faster files can be synchronized to the nodes.
+ Ssh access to a small to medium "bastion" instance in the same AWS region as your cluster works well. See Ansible Setup below for further details.
 * An AWS Key Pair (PEM file) downloaded to the Ansible controller host.
-* A copy of the ConductR and ConductR-Agent deb installation package on the Ansible controller host.
 * A copy of this GitHub repo on the Ansible controller host.
 
 ## Setup
 
-ConductR is **not** provided by this repository. Visit the [Customer Portal](https://together.lightbend.com/) to download or [Lightbend.com](https://www.lightbend.com/products/conductr) to sign up to evaluate Lightbend Production Suite. Developers should use the [developer sandbox](https://www.lightbend.com/product/conductr/developer) to validate bundle packaging and execution.
+ConductR installation packages are **not** provided by this repository. Visit the [Customer Portal](https://together.lightbend.com/) to download or [Lightbend.com](https://www.lightbend.com/products/conductr)
+ to sign up to evaluate Lightbend Production Suite. Developers should use the [developer sandbox](https://www.lightbend.com/product/conductr/developer) to validate bundle packaging and execution.
 
-Obtain your Lightbend credentials from [Lightbend.com](https://www.lightbend.com/product/conductr/developer) and replace 'username' and 'password' in 'conductr/files/commercial.properties'.
+Obtain your Lightbend credentials from [Lightbend.com](https://www.lightbend.com/product/conductr/developer) and replace `username` and `password` in `conductr/files/my.commercial.properties` using the provided template.
 
-Copy the ConductR deb (conductr_x.y.z-systemd_all.deb) *and* the ConductR-Agent deb (conductr-agent_x.y.z-systemd_all.deb) installation package into the `conductr/files` folder in your local copy of this repo. The installation package will be uploaded from this folder by the ConductR play to each of the EC2 instances for installation. The names and versions in the vars file should be updated whenever changing versions.
+Copy the systemd ConductR deb (conductr_x.y.z-systemd_all.deb) *and* the ConductR-Agent deb (conductr-agent_x.y.z-systemd_all.deb) installation package into the `conductr/files` folder in your local copy of this repo.
+ The installation packages will be uploaded from this folder to each of the EC2 instances for installation. The names and versions in the vars file need to be updated whenever changing versions.
 
-Log into the AWS Console and select or generate a key pair in the region you intend to use. You'll need both the path to a local copy of the PEM file and the key pair name used in console to record in your vars file. Specify your 'keypair' in the vars file.
+Log into the AWS Console and select or generate a key pair in the region you intend to use. You'll need both the path to a copy of the PEM file local to the Ansible host and
+ the key pair _name_ used in the AWS console to record in your vars file. Specify the name matching the pem file in `keypair` in the vars file.
 
 ## Running the Plays
 
@@ -92,20 +120,25 @@ nohup ansible-playbook build-private-agent-cluster-ec2.yml -e "VARS_FILE=vars/{{
 
 A few things to double check before running playbooks:
 * Credentials in `conductr/files/my.commercial.credenteials"
-* ConductR core and agent packages in `conductr/files`
+* ConductR core _and_ agent packages in `conductr/files` _and_ match in the vars file
 * Private key file *and* matching name in vars file
-* Update AMIs to latest *and* local to target region
-* Customize plays. Include additional bundle config plays, use Oracle JDK, increase disk sizes or not install Docker for example.
-
+* Update AMIs to latest *and* ensure are local to target region
+* Any optional play customization needs.
+ This could include adding additional bundle config plays, changing to use Oracle JDK, increasing disk sizes, use syslog instead of the provided ELK stack, not install Docker, etc etc
 
 ## Accessing cluster applications
 
-If all went well you now have a three node ConductR cluster. The nodes are registered with the ELB. In order to access applications from the internet you must add a listener to the ELB and ensure port access. To expose bundle endpoints to the world you must:
-* Add a listener to the ELB. The instance port of the listener will be that of the bundle endpoint.
-* Grant the ELB-SG inbound access on the instance port in to the Node-SG
-* If using ELB ports other than 80 and 443, allow the world, `0.0.0.0/0`, inbound access on the ELB port in to the ELB-SG.
+If all went well you now have a three node ConductR cluster. The nodes are registered with the ELB. You can change the script to not assign these nodes public IPs, but you will also need to
+ put the ELB into the node security for the nodes to be reachable.
 
-The Visualizer sample application has been setup as an example. Start at least one instance of Visualizer in the cluster. Now you can access the Visualizer sample application using port 80 of the ELB DNS Name in your browser. You may delete or remap the Visualizer ELB listeners and corresponding security group access as desired.
+In order to access applications from the internet you must add a listener to the ELB and ensure the ingress ports are accessible from the ELB.
+ To expose bundle endpoints to the world you must:
+* Add a listener to the ELB. The instance port of the listener will be that of the bundle endpoint. Port `80` to `9000` or `80` is a common listener. Use `tcp` for websockets.
+* Grant the ELB-SG inbound access on the instance port in to the `Node-SG`
+* If using ELB ports other than the already allowed 80 and 443, allow any address, `0.0.0.0/0`, inbound access on the ELB port in to the ELB-SG.
+
+The Visualizer sample application has been setup as an example. Start at least one instance of Visualizer in the cluster. If you map port `80` to `9999`, you can access the Visualizer sample application using the ELB DNS Name.
+. You may delete or remap the Visualizer ELB listeners and corresponding security group access as desired. They are not required by ConductR.
 
 ### Running many services on few ports
 

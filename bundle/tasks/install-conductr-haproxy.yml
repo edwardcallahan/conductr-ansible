@@ -17,4 +17,3 @@
 
 - name: Run Bundle - ConductR HAProxy
   command: "conduct run --ip {{ host_ip.stdout }} conductr-haproxy --scale {{ haproxy_nodes.agents | length }}"
-
