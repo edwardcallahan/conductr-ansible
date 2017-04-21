@@ -12,7 +12,9 @@ INSTALL_DOCKER: "true"
 REMOTE_USER: "ubuntu"
 
 # This image is Ubuntu 16.04 LTS amd64 hvm:ebs-ssd in us-east-1
+#
 # Must be changed to region local Ubuntu AMI for all other regions
+#
 CORE_IMAGE: "ami-80861296"
 PRIVATE_AGENT_IMAGE: "ami-80861296"
 PUBLIC_AGENT_IMAGE: "ami-80861296"
@@ -50,7 +52,7 @@ AZ_PRIVATE_3: "{{ vpc.subnets[5].az }}"
 SN_PRIVATE_3: "{{ vpc.subnets[5].id }}"
 
 ELB_NAME: "{{ elb.elb.name }}"
-TAG_NAME: "Lightbend Production Suite"
+TAG_NAME: "Lightbend Suite"
 COMMERCIAL_CREDENTIALS: "my.commercial.credentials"
 CONDUCTR_PKG: "conductr_2.0.0-systemd_all.deb"
 CONDUCTR_CORE_WORK_DIR: "/tmp"

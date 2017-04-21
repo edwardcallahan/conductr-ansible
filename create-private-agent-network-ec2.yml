@@ -8,6 +8,11 @@
   connection: local
   gather_facts: False
 
+# This image is Ubuntu 16.04 LTS amd64 hvm:ebs-ssd in us-east-1
+# For updates and other regions https://cloud-images.ubuntu.com/locator/ec2/
+#
+# Must be changed to region local Ubuntu AMI for all other regions
+#
   vars:
     BASTION_IMAGE: "ami-80861296"
     BASTION_INSTANCE_TYPE: "t2.large"
@@ -26,7 +31,7 @@
         module: ec2_vpc
         cidr_block: 10.100.0.0/16
         resource_tags:
-          Name: "Lightbend Production Suite Cluster VPC"
+          Name: "Lightbend Suite Cluster VPC"
         region: "{{ EC2_REGION }}"
         dns_hostnames: yes
         dns_support: yes
