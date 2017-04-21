@@ -79,8 +79,8 @@
     - name: Create Admin SG
       local_action:
         module: ec2_group
-        name: "{{ admin_name }}-SG"
-        description: "{{ admin_name }}-SG"
+        name: "{{ admin_name }}"
+        description: "{{ admin_name }}"
         vpc_id: "{{ vpc.vpc_id }}"
         region: "{{ vpc.vpc.region }}"
         state: present
@@ -94,8 +94,8 @@
     - name: Create Ingress SG
       local_action:
         module: ec2_group
-        name: "{{ ingress_name }}-SG"
-        description: "{{ ingress_name }}-SG"
+        name: "{{ ingress_name }}"
+        description: "{{ ingress_name }}"
         vpc_id: "{{ vpc.vpc_id }}"
         region: "{{ vpc.vpc.region }}"
         state: present
@@ -117,8 +117,8 @@
     - name: Create Public Agent SG
       local_action:
         module: ec2_group
-        name: "{{ public_agent_name }}-SG"
-        description: "{{ public_agent_name }}-SG"
+        name: "{{ public_agent_name }}"
+        description: "{{ public_agent_name }}"
         vpc_id: "{{ vpc.vpc_id }}"
         region: "{{ vpc.vpc.region }}"
         rules:
@@ -143,8 +143,8 @@
     - name: Create Private Agent SG
       local_action:
         module: ec2_group
-        name: "{{ private_agent_name }}-SG"
-        description: "{{ private_agent_name }}-SG"
+        name: "{{ private_agent_name }}"
+        description: "{{ private_agent_name }}"
         vpc_id: "{{ vpc.vpc_id }}"
         region: "{{ vpc.vpc.region }}"
         rules:
@@ -159,8 +159,8 @@
     - name: Create Core Nodes SG
       local_action:
         module: ec2_group
-        name: "{{ core_name }}-SG"
-        description: "{{ core_name }}-SG"
+        name: "{{ core_name }}"
+        description: "{{ core_name }}"
         vpc_id: "{{ vpc.vpc_id }}"
         region: "{{ vpc.vpc.region }}"
         rules:
@@ -184,8 +184,8 @@
     - name: Admin SSH Core Nodes
       local_action:
         module: ec2_group
-        name: "{{ core_name }}-SG"
-        description: "{{ core_name }}-SG"
+        name: "{{ core_name }}"
+        description: "{{ core_name }}"
         region: "{{ vpc.vpc.region }}"
         rules:
           - proto: tcp
@@ -196,8 +196,8 @@
     - name: Akka Remoting Private Agents
       local_action:
         module: ec2_group
-        name: "{{ private_agent_name }}-SG"
-        description: "{{ private_agent_name }}-SG"
+        name: "{{ private_agent_name }}"
+        description: "{{ private_agent_name }}"
         region: "{{ vpc.vpc.region }}"
         rules:
           - proto: tcp
@@ -208,8 +208,8 @@
     - name: Admin SSH Private Agents
       local_action:
         module: ec2_group
-        name: "{{ private_agent_name }}-SG"
-        description: "{{ private_agent_name }}-SG"
+        name: "{{ private_agent_name }}"
+        description: "{{ private_agent_name }}"
         region: "{{ vpc.vpc.region }}"
         rules:
           - proto: tcp
@@ -220,8 +220,8 @@
     - name: Akka Remoting Public Agents
       local_action:
         module: ec2_group
-        name: "{{ public_agent_name }}-SG"
-        description: "{{ public_agent_name }}-SG"
+        name: "{{ public_agent_name }}"
+        description: "{{ public_agent_name }}"
         region: "{{ vpc.vpc.region }}"
         rules:
           - proto: tcp
@@ -232,8 +232,8 @@
     - name: Admin SSH Public Agents
       local_action:
         module: ec2_group
-        name: "{{ public_agent_name }}-SG"
-        description: "{{ public_agent_name }}-SG"
+        name: "{{ public_agent_name }}"
+        description: "{{ public_agent_name }}"
         region: "{{ vpc.vpc.region }}"
         rules:
           - proto: tcp
