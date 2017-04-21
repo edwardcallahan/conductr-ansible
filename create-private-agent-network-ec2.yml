@@ -9,7 +9,7 @@
   gather_facts: False
 
   vars:
-    BASTION_IMAGE: "ami-4dd2575b"
+    BASTION_IMAGE: "ami-80861296"
     BASTION_INSTANCE_TYPE: "t2.large"
     BASTION_VOL_TYPE: "gp2"
     BASTION_VOL_SIZE: 100
@@ -327,4 +327,7 @@
     - include: system/tasks/update-ubuntu.yml
     - include: ntp/tasks/main.yml
     - include: ansible/tasks/setup-ansible.yml
+    - include: conductr/tasks/install-cli-pip.yml
+    - include: java/tasks/openjdk.yml
+    - include: docker/tasks/main.yml
     - include: system/tasks/upgrade-ubuntu.yml
