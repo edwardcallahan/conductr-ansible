@@ -58,4 +58,6 @@
     - include: ntp/tasks/main.yml
     - include: ansible/tasks/setup-ansible.yml
     - include: conductr/tasks/install-cli-pip.yml
+    - include: java/tasks/openjdk.yml
+    - include: docker/tasks/main.yml
     - include: system/tasks/upgrade-ubuntu.yml
