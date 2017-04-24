@@ -35,6 +35,11 @@ The `create-private-agent-network-ec2.yml` playbook also configures a VPC with s
 The `create-bastion.yml` playbook can be used to seed an administrative node into an existing subnet. This can be useful even
  when using the '3x3' model with public IPs for faster bundle management by avoiding uploading over the WAN.
 
+ ```bash
+ansible-playbook create-bastion.yml --private-key ../.keys/Key-Pair.pem  -e "VARS_FILE=vars/my_bastion_vars.yml"
+
+ ```
+
 The `create-cloudformation-ami.yml` playbook is for building AMIs for use with [ConductrR-Cloudformation](https://github.com/typesafehub/conductr-cloudformation).
 
 ## Prerequisites
@@ -123,6 +128,7 @@ A few things to double check before running playbooks:
 * ConductR core _and_ agent packages in `conductr/files` _and_ match in the vars file
 * Private key file *and* matching name in vars file
 * Update AMIs to latest *and* ensure are local to target region
+* Ansible running under Python 2.7. Ansible's Python 3 support may cause errors at this time
 * Any optional play customization needs.
  This could include adding additional bundle config plays, changing to use Oracle JDK, increasing disk sizes, use syslog instead of the provided ELK stack, not install Docker, etc etc
 
