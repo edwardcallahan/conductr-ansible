@@ -8,17 +8,22 @@
   connection: local
   gather_facts: False
 
+# This image is Ubuntu 16.04 LTS amd64 hvm:ebs-ssd in us-east-1
+# For updates and other regions https://cloud-images.ubuntu.com/locator/ec2/
+#
+# Must be changed to region local Ubuntu AMI for all other regions
+#
   vars:
-    BASTION_IMAGE: "ami-4dd2575b"
+    BASTION_IMAGE: "ami-80861296"
     BASTION_INSTANCE_TYPE: "t2.large"
     BASTION_VOL_TYPE: "gp2"
     BASTION_VOL_SIZE: 100
     EC2_REGION: us-east-1
-    admin_sg_name: Lightbend Admin Access SG
-    core_sg_name: Lightbend Core Node SG
-    ingress_sg_name: Lightbend ELB Ingress SG
-    private_agent_sg_name: Lightbend Private Agent SG
-    public_agent_sg_name: Lightbend Public Agent SG
+    admin_name: "Lightbend Admin Access"
+    core_name: "Lightbend Core Node"
+    ingress_name: "Lightbend ELB Ingress"
+    private_agent_name: "Lightbend Private Agent"
+    public_agent_name: "Lightbend Public Agent"
 
   tasks:
     - name: Create VPC
@@ -26,7 +31,7 @@
         module: ec2_vpc
         cidr_block: 10.100.0.0/16
         resource_tags:
-          Name: "Lightbend Production Suite Cluster VPC"
+          Name: "Lightbend Suite Cluster VPC"
         region: "{{ EC2_REGION }}"
         dns_hostnames: yes
         dns_support: yes
@@ -74,8 +79,8 @@
     - name: Create Admin SG
       local_action:
         module: ec2_group
-        name: Lightbend Admin SG
-        description: Admin Access to Lightbend Cluster
+        name: "{{ admin_name }}"
+        description: "{{ admin_name }}"
         vpc_id: "{{ vpc.vpc_id }}"
         region: "{{ vpc.vpc.region }}"
         state: present
@@ -89,8 +94,8 @@
     - name: Create Ingress SG
       local_action:
         module: ec2_group
-        name: Lightbend Ingress SG
-        description: Ingress SG to Lightbend Cluster
+        name: "{{ ingress_name }}"
+        description: "{{ ingress_name }}"
         vpc_id: "{{ vpc.vpc_id }}"
         region: "{{ vpc.vpc.region }}"
         state: present
@@ -112,8 +117,8 @@
     - name: Create Public Agent SG
       local_action:
         module: ec2_group
-        name: Lightbend Public Agent SG
-        description: SG for ConductR Public Agents
+        name: "{{ public_agent_name }}"
+        description: "{{ public_agent_name }}"
         vpc_id: "{{ vpc.vpc_id }}"
         region: "{{ vpc.vpc.region }}"
         rules:
@@ -138,8 +143,8 @@
     - name: Create Private Agent SG
       local_action:
         module: ec2_group
-        name: Lightbend Private Agent SG
-        description: Lightbend Private Agent SG
+        name: "{{ private_agent_name }}"
+        description: "{{ private_agent_name }}"
         vpc_id: "{{ vpc.vpc_id }}"
         region: "{{ vpc.vpc.region }}"
         rules:
@@ -154,8 +159,8 @@
     - name: Create Core Nodes SG
       local_action:
         module: ec2_group
-        name: Lightbend Core Node SG
-        description: Lightbend Core Node SG
+        name: "{{ core_name }}"
+        description: "{{ core_name }}"
         vpc_id: "{{ vpc.vpc_id }}"
         region: "{{ vpc.vpc.region }}"
         rules:
@@ -179,8 +184,8 @@
     - name: Admin SSH Core Nodes
       local_action:
         module: ec2_group
-        name: Lightbend Core Node SG
-        description: Lightbend Core Node SG
+        name: "{{ core_name }}"
+        description: "{{ core_name }}"
         region: "{{ vpc.vpc.region }}"
         rules:
           - proto: tcp
@@ -191,8 +196,8 @@
     - name: Akka Remoting Private Agents
       local_action:
         module: ec2_group
-        name: Lightbend Private Agent SG
-        description: Lightbend Private Agent SG
+        name: "{{ private_agent_name }}"
+        description: "{{ private_agent_name }}"
         region: "{{ vpc.vpc.region }}"
         rules:
           - proto: tcp
@@ -203,8 +208,8 @@
     - name: Admin SSH Private Agents
       local_action:
         module: ec2_group
-        name: Lightbend Private Agent SG
-        description: Lightbend Private Agent SG
+        name: "{{ private_agent_name }}"
+        description: "{{ private_agent_name }}"
         region: "{{ vpc.vpc.region }}"
         rules:
           - proto: tcp
@@ -215,8 +220,8 @@
     - name: Akka Remoting Public Agents
       local_action:
         module: ec2_group
-        name: Lightbend Public Agent SG
-        description: Lightbend Public Agent SG
+        name: "{{ public_agent_name }}"
+        description: "{{ public_agent_name }}"
         region: "{{ vpc.vpc.region }}"
         rules:
           - proto: tcp
@@ -227,8 +232,8 @@
     - name: Admin SSH Public Agents
       local_action:
         module: ec2_group
-        name: Lightbend Public Agent SG
-        description: Lightbend Public Agent SG
+        name: "{{ public_agent_name }}"
+        description: "{{ public_agent_name }}"
         region: "{{ vpc.vpc.region }}"
         rules:
           - proto: tcp
@@ -324,7 +329,9 @@
 
   tasks:
     - include: python/tasks/main.yml
-    - include: system/tasks/update-ubuntu.yml
     - include: ntp/tasks/main.yml
     - include: ansible/tasks/setup-ansible.yml
-    - include: system/tasks/upgrade-ubuntu.yml
+    - include: conductr/tasks/install-cli-pip.yml
+    - include: java/tasks/openjdk.yml
+    - include: docker/tasks/main.yml
+    - include: system/tasks/update-ubuntu.yml

@@ -52,10 +52,14 @@
   vars:
    REMOTE_USER: "ubuntu"
 
+  vars_files:
+    - "{{ VARS_FILE }}"
+
   tasks:
     - include: python/tasks/main.yml
-    - include: system/tasks/update-ubuntu.yml
     - include: ntp/tasks/main.yml
     - include: ansible/tasks/setup-ansible.yml
     - include: conductr/tasks/install-cli-pip.yml
-    - include: system/tasks/upgrade-ubuntu.yml
+    - include: java/tasks/openjdk.yml
+    - include: docker/tasks/main.yml
+    - include: system/tasks/update-ubuntu.yml
