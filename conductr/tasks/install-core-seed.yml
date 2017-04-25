@@ -32,6 +32,8 @@
   become: yes
   become_method: sudo
 
+- file: path="/home/{{ REMOTE_USER }}/.lightbend" owner="{{ REMOTE_USER }}" recurse=yes
+
 - shell: 'echo -Dconductr.resource-provider.match-offer-roles=on | sudo tee -a /usr/share/conductr/conf/conductr.ini'
   become: yes
   become_method: sudo
