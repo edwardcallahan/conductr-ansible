@@ -128,6 +128,7 @@ A few things to double check before running playbooks:
 * ConductR core _and_ agent packages in `conductr/files` _and_ match in the vars file
 * Private key file *and* matching name in vars file
 * Update AMIs to latest *and* ensure are local to target region
+* .dockercfg file for private repo access, if needed
 * Ansible running under Python 2.7. Ansible's Python 3 support may cause errors at this time
 * Any optional play customization needs.
  This could include adding additional bundle config plays, changing to use Oracle JDK, increasing disk sizes, use syslog instead of the provided ELK stack, not install Docker, etc etc
@@ -185,7 +186,7 @@ The vars file templates contain variables for controlling optional features and 
 
 `ENABLE_ROLES` defaults to "true." When set to "true," `-Dconductr.resource-provider.match-offer-roles=on` is added to ConductR's `conf/application.ini` to enable role matching. Use "false" to disable.
 
-`INSTALL_DOCKER` defaults to "true." When set to "true," the Docker apt repository is used to install lxc-docker for ConductR non-root usage. Use "false" to disable.
+`INSTALL_DOCKER` defaults to "true." When set to "true," the Docker apt repository is used to install Docker for ConductR-Agent usage. Use "false" to disable. Use `docker/files/dockercfg` for DockerHub credentials.
 
 `CONDUCTR_PRIVATE_ROLES` is a list and defaults to `web` and `elasticsearch` if not specified. To append additional role, e.g. `GPU` specify the following within the vars file:
 
