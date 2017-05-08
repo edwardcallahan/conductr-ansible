@@ -35,6 +35,11 @@
   become: yes
   become_method: sudo
 
+- name: Copy .dockercfg
+  synchronize: src="docker/files/dockercfg" dest="/home/{{ AGENT_USER }}/.dockercfg"
+
+- file: path="/home/{{ AGENT_USER }}/.dockercfg" owner="{{ AGENT_USER }}" recurse=yes
+
 - name: Restart docker
   service:
     name: docker
