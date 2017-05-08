@@ -2,8 +2,8 @@
 - shell: "hostname -i"
   register: host_ip
 
-- name: Load conductr-elasticsearch elasticsearch-prod
-  command: "conduct load --ip {{ host_ip.stdout }} conductr-elasticsearch"
+- name: Load conductr-elasticsearch
+  command: "conduct load --ip {{ host_ip.stdout }} conductr-elasticsearch  elasticsearch-prod"
 
 - name: Run conductr-elasticsearch
   command: "conduct run --ip {{ host_ip.stdout}}  conductr-elasticsearch"
