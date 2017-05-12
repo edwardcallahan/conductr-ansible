@@ -27,6 +27,8 @@
 - name: Copy commercial.properties
   synchronize: src="conductr/files/{{ COMMERCIAL_CREDENTIALS }}" dest="/home/{{ REMOTE_USER }}/.lightbend/commercial.credentials"
 
+- file: path="/home/{{ REMOTE_USER }}/.lightbend" owner="{{ REMOTE_USER }}" recurse=yes
+
 - name: Install ConductR CLI
   command: pip3 install -U conductr-cli requests
   become: yes
