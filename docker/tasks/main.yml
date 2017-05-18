@@ -38,7 +38,7 @@
 - name: Copy .dockercfg
   synchronize: src="docker/files/dockercfg" dest="/home/{{ AGENT_USER }}/.dockercfg"
 
-- file: path="/home/{{ AGENT_USER }}/.dockercfg" owner="{{ AGENT_USER }}" recurse=yes
+- file: path="/home/{{ AGENT_USER }}/.dockercfg" owner="{{ AGENT_USER }}"
 
 - name: Restart docker
   service:
