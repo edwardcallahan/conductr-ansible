@@ -241,6 +241,18 @@
             to_port: 22
             group_id: "{{ admin_sg.group_id}}"
 
+    - name: Proxy Access from Core Nodes
+      local_action:
+        module: ec2_group
+        name: "{{ private_agent_name }}"
+        description: "{{ private_agent_name }}"
+        region: "{{ vpc.vpc.region }}"
+        rules:
+          - proto: tcp
+            from_port: 10000
+            to_port: 10999
+            group_name: "{{ core_sg.group_id }}"
+
     - name: Launch Bastion Node
       local_action:
         module: ec2
