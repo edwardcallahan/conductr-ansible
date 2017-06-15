@@ -14,7 +14,7 @@
 # Must be changed to region local Ubuntu AMI for all other regions
 #
   vars:
-    BASTION_IMAGE: "ami-80861296"
+    BASTION_IMAGE: "ami-20631a36"
     BASTION_INSTANCE_TYPE: "t2.large"
     BASTION_VOL_TYPE: "gp2"
     BASTION_VOL_SIZE: 100
@@ -75,6 +75,15 @@
                 Name: "Lightbend {{ EC2_REGION }}-C Private SN"
         state: present
       register: vpc
+
+   - name: Create NAT Gateway
+    ec2_vpc_nat_gateway:
+      state: present
+      subnet_id:  "{{ vpc.subnets[0].id }}"
+      wait: yes
+      region: "{{ EC2_REGION }}"
+      if_exist_do_not_create: true
+    register: nat_gateway
 
     - name: Create Admin SG
       local_action:
