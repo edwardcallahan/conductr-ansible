@@ -216,7 +216,7 @@ git clone https://github.com/ansible/ansible.git --recursive
 sudo apt-get install python-setuptools autoconf g++ python2.7-dev
 sudo apt-get install build-essential libssl-dev libffi-dev python-dev
 sudo easy_install pip
-sudo pip install paramiko PyYAML Jinja2 httplib2 boto
+sudo pip install paramiko PyYAML Jinja2 httplib2 boto boto3
 ```
 
 Should `pip` not satisfy requirements, `easy_install` is an alternative python installer. Example: `sudo python -m easy_install pyyaml`.
