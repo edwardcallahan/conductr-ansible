@@ -199,10 +199,11 @@
     - "{{ VARS_FILE }}"
 
   tasks:
-    - include: bundle/tasks/install-elasticsearch.yml
-    - include: bundle/tasks/install-conductr-haproxy.yml
-    - include: bundle/tasks/install-kibana.yml
-    - include: bundle/tasks/install-visualizer.yml
+    - include: "conductr/tasks/install-access-token.yml"
+    - include: "bundle/tasks/install-elasticsearch.yml"
+    - include: "bundle/tasks/install-conductr-haproxy.yml"
+    - include: "bundle/tasks/install-kibana.yml"
+    - include: "bundle/tasks/install-visualizer.yml"
 
     - pause:
         prompt: "Allowing instances to become healthy. Abort to not launch template instance, requiring manual registration w/ELB"

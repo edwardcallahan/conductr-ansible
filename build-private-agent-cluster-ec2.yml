@@ -310,6 +310,7 @@
     - "{{ VARS_FILE }}"
 
   tasks:
+    - include: "conductr/tasks/install-access-token.yml"
     - include: "bundle/tasks/install-elasticsearch.yml"
     - include: "bundle/tasks/install-conductr-haproxy.yml"
     - include: "bundle/tasks/install-kibana.yml"
