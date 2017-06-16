@@ -76,14 +76,14 @@
         state: present
       register: vpc
 
-   - name: Create NAT Gateway
-    ec2_vpc_nat_gateway:
-      state: present
-      subnet_id:  "{{ vpc.subnets[0].id }}"
-      wait: yes
-      region: "{{ EC2_REGION }}"
-      if_exist_do_not_create: true
-    register: nat_gateway
+    - name: Create NAT Gateway
+      ec2_vpc_nat_gateway:
+        state: present
+        subnet_id:  "{{ vpc.subnets[0].id }}"
+        wait: yes
+        region: "{{ EC2_REGION }}"
+        if_exist_do_not_create: true
+      register: nat_gateway
 
     - name: Create Admin SG
       local_action:
