@@ -1,7 +1,7 @@
 ---
 # Must be set to the key pair name of the file passed to playbook
 KEYPAIR: "Key Pair Name"
-CONDUCTR_VERSION: "2.0.0"
+CONDUCTR_VERSION: "2.1.0"
 EC2_REGION: "{{ EC2_REGION }}"
 EC2_AZ_1: "a"
 EC2_AZ_2: "b"
@@ -16,10 +16,10 @@ AGENT_USER: "conductr-agent"
 #
 # Must be changed to region local Ubuntu AMI for all other regions
 #
-CORE_IMAGE: "ami-80861296"
-PRIVATE_AGENT_IMAGE: "ami-80861296"
-PUBLIC_AGENT_IMAGE: "ami-80861296"
-TEMPLATE_IMAGE: "ami-80861296"
+CORE_IMAGE: "ami-20631a36"
+PRIVATE_AGENT_IMAGE: "ami-20631a36"
+PUBLIC_AGENT_IMAGE: "ami-20631a36"
+TEMPLATE_IMAGE: "ami-20631a36"
 
 CORE_INSTANCE_TYPE: "t2.large"
 CORE_VOL_TYPE: "gp2"
@@ -55,9 +55,9 @@ SN_PRIVATE_3: "{{ vpc.subnets[5].id }}"
 ELB_NAME: "{{ elb.elb.name }}"
 TAG_NAME: "Lightbend Suite"
 COMMERCIAL_CREDENTIALS: "my.commercial.credentials"
-CONDUCTR_PKG: "conductr_2.0.0-systemd_all.deb"
+CONDUCTR_PKG: "conductr_2.1.0-systemd_all.deb"
 CONDUCTR_CORE_WORK_DIR: "/tmp"
-CONDUCTR_AGENT_PKG: "conductr-agent_2.0.0-systemd_all.deb"
+CONDUCTR_AGENT_PKG: "conductr-agent_2.1.0-systemd_all.deb"
 CONDUCTR_AGENT_WORK_DIR: "/tmp/conductr-agent"
 
 # ConductR 2.*:
