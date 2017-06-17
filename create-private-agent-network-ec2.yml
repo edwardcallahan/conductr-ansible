@@ -39,15 +39,14 @@
         route_tables:
           - subnets:
               - 10.100.1.0/24
-              - 10.100.2.0/24
               - 10.100.3.0/24
-              - 10.100.4.0/24
               - 10.100.5.0/24
+              - 10.100.2.0/24
+              - 10.100.4.0/24
               - 10.100.6.0/24
             routes:
               - dest: 0.0.0.0/0
                 gw: igw
-        subnets:
           - cidr: 10.100.1.0/24
             az: "{{ EC2_REGION }}a"
             resource_tags:
@@ -130,23 +129,6 @@
         description: "{{ public_agent_name }}"
         vpc_id: "{{ vpc.vpc_id }}"
         region: "{{ vpc.vpc.region }}"
-        rules:
-          # HTTP application endpoints
-          - proto: tcp
-            from_port: 9000
-            to_port: 9000
-            group_id: "{{ ingress_sg.group_id }}"
-          # ELB health check
-          - proto: tcp
-            from_port: 9009
-            to_port: 9009
-            group_id: "{{ ingress_sg.group_id }}"
-          # Visualizer
-          - proto: tcp
-            from_port: 9999
-            to_port: 9999
-            group_id: "{{ ingress_sg.group_id }}"
-        state: present
       register: public_agent_sg
 
     - name: Create Private Agent SG
@@ -156,12 +138,6 @@
         description: "{{ private_agent_name }}"
         vpc_id: "{{ vpc.vpc_id }}"
         region: "{{ vpc.vpc.region }}"
-        rules:
-          # Proxy access from ConductR public agents
-          - proto: tcp
-            from_port: 10000
-            to_port: 10999
-            group_name: "{{ public_agent_sg.group_id }}"
         state: present
       register: private_agent_sg
 
@@ -173,6 +149,11 @@
         vpc_id: "{{ vpc.vpc_id }}"
         region: "{{ vpc.vpc.region }}"
         rules:
+          # Admin SSH
+          - proto: tcp
+            from_port: 22
+            to_port: 22
+            group_id: "{{ admin_sg.group_id}}"
           # Akka Remoting, Control Protocol, Bundle Stream Server,
           # Status Server and Service Locator
           # From Public Agent to Core
@@ -190,77 +171,61 @@
         state: present
       register: core_sg
 
-    - name: Admin SSH Core Nodes
-      local_action:
-        module: ec2_group
-        name: "{{ core_name }}"
-        description: "{{ core_name }}"
-        region: "{{ vpc.vpc.region }}"
-        rules:
-          - proto: tcp
-            from_port: 22
-            to_port: 22
-            group_id: "{{ admin_sg.group_id}}"
-
-    - name: Akka Remoting Private Agents
-      local_action:
-        module: ec2_group
-        name: "{{ private_agent_name }}"
-        description: "{{ private_agent_name }}"
-        region: "{{ vpc.vpc.region }}"
-        rules:
-          - proto: tcp
-            from_port: 2552
-            to_port: 2552
-            group_id: "{{ core_sg.group_id}}"
-
-    - name: Admin SSH Private Agents
-      local_action:
-        module: ec2_group
-        name: "{{ private_agent_name }}"
-        description: "{{ private_agent_name }}"
-        region: "{{ vpc.vpc.region }}"
-        rules:
-          - proto: tcp
-            from_port: 22
-            to_port: 22
-            group_id: "{{ admin_sg.group_id}}"
-
-    - name: Akka Remoting Public Agents
+    - name: Public Agents
       local_action:
         module: ec2_group
         name: "{{ public_agent_name }}"
         description: "{{ public_agent_name }}"
         region: "{{ vpc.vpc.region }}"
         rules:
-          - proto: tcp
-            from_port: 2552
-            to_port: 2552
-            group_id: "{{ core_sg.group_id}}"
-
-    - name: Admin SSH Public Agents
-      local_action:
-        module: ec2_group
-        name: "{{ public_agent_name }}"
-        description: "{{ public_agent_name }}"
-        region: "{{ vpc.vpc.region }}"
-        rules:
+          # Admin SSH
           - proto: tcp
             from_port: 22
             to_port: 22
             group_id: "{{ admin_sg.group_id}}"
+          # Remoting
+          - proto: tcp
+            from_port: 2552
+            to_port: 2552
+            group_id: "{{ core_sg.group_id}}"
+          # ELB health check
+          - proto: tcp
+            from_port: 9009
+            to_port: 9009
+            group_id: "{{ ingress_sg.group_id }}"
+          # Visualizer
+          - proto: tcp
+            from_port: 9999
+            to_port: 9999
+            group_id: "{{ ingress_sg.group_id }}"
 
-    - name: Proxy Access from Core Nodes
+    - name: Private Agents
       local_action:
         module: ec2_group
         name: "{{ private_agent_name }}"
         description: "{{ private_agent_name }}"
         region: "{{ vpc.vpc.region }}"
         rules:
+          # Admin SSH
+          - proto: tcp
+            from_port: 22
+            to_port: 22
+            group_id: "{{ admin_sg.group_id}}"
+          # Akka Remoting
+          - proto: tcp
+            from_port: 2552
+            to_port: 2552
+            group_id: "{{ core_sg.group_id}}"
+          # Proxy access
           - proto: tcp
             from_port: 10000
             to_port: 10999
             group_name: "{{ core_sg.group_id }}"
+          # Proxy access from ConductR public agents
+          - proto: tcp
+            from_port: 10000
+            to_port: 10999
+            group_name: "{{ public_agent_sg.group_id }}"
 
     - name: Launch Bastion Node
       local_action:

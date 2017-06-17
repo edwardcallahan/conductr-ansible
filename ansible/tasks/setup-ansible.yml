@@ -25,7 +25,7 @@
 - name: Install g++
   apt: name=g++ state=latest
 
-- command: pip install ansible paramiko PyYAML Jinja2 httplib2 boto
+- command: pip install ansible paramiko PyYAML Jinja2 httplib2 boto boto3
   become: yes
   become_method: sudo
 
