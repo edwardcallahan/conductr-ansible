@@ -71,7 +71,7 @@
       register: nat_gateway
 
     - name: Create Private Subnets
-      ec2_vps_subnet:
+      ec2_vpc_subnet:
         state: present
         vpc_id: "{{ vpc.id }}"
         cidr: 10.100.2.0/24
@@ -80,25 +80,25 @@
           Name: "Lightbend {{ EC2_REGION }}-A Private SN"
         register: private_sn_A
 
-    - name: Create Private Subnets
-        ec2_vps_subnet:
-          state: present
-          vpc_id: "{{ vpc.id }}"
-          cidr: 10.100.4.0/24
-          az: "{{ EC2_REGION }}b"
-          resource_tags:
-            Name: "Lightbend {{ EC2_REGION }}-B Private SN"
-          register: private_SN_B
+    - name: Create Private Subnet
+      ec2_vpc_subnet:
+        state: present
+        vpc_id: "{{ vpc.id }}"
+        cidr: 10.100.4.0/24
+        az: "{{ EC2_REGION }}b"
+        resource_tags:
+          Name: "Lightbend {{ EC2_REGION }}-B Private SN"
+        register: private_SN_B
 
-   - name: Create Private Subnets
-       ec2_vps_subnet:
-         state: present
-         vpc_id: "{{ vpc.id }}"
-         cidr: 10.100.6.0/24
-         az: "{{ EC2_REGION }}c"
-         resource_tags:
-           Name: "Lightbend {{ EC2_REGION }}-C Private SN"
-          register: private_SN_C
+    - name: Create Private Subnets
+      ec2_vpc_subnet:
+        state: present
+        vpc_id: "{{ vpc.id }}"
+        cidr: 10.100.6.0/24
+        az: "{{ EC2_REGION }}c"
+        resource_tags:
+          Name: "Lightbend {{ EC2_REGION }}-C Private SN"
+        register: private_SN_C
 
     - name: Set up NAT-protected route table
       ec2_vpc_route_table:
@@ -107,9 +107,9 @@
           - "{{ private_sn_A}}"
           - "{{ private_sn_B}}"
           - "{{ private_sn_C}}"
-         routes:
-           - dest: 0.0.0.0/0
-             gw: "{{ nat_gateway.id}}"
+        routes:
+          - dest: 0.0.0.0/0
+            gw: "{{ nat_gateway.id}}"
 
     - name: Create Admin SG
       local_action:
