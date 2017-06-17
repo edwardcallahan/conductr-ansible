@@ -1,6 +1,3 @@
 ---
-- name: Copy Access Token
-  synchronize: src=conductr/files/access-token dest={{ CONDUCTR_CORE_WORK_DIR }}
-
-- command: "conduct load-license <<< {{ CONDUCTR_CORE_WORK_DIR }}/access-token"
+- command: conduct load-license <<<  "{{ lookup('file', conductr/files/access-token) }}"
 
