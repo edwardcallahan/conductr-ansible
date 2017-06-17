@@ -186,22 +186,11 @@ For the most part, we only expose ports 80 and 443 to the world. We might have a
  to set of services on a different port, but we generally don't want to have many port mappings to manage.
  Hostnames and paths can be used to segment traffic between applications.
 
-For example to run a staging instance of an application on the same cluster and service endpoint port,
- use a [Configuration-Bundle](http://conductr.lightbend.com/docs/2.1.x/BundleConfiguration#Configuration-Bundles) with a staging hostname.
+For example to run a staging instance of an application on the same cluster and service endpoint port:
+* Provide a configuration bundle to define the staging endpoint
+* Provide a custom HAProxy template to perform the host header match
 
- ```
- components = {
-   www-staging = {
-   description = "www-staging"
-     endpoints = {
-       “www” = {
-         service-name = “WWW_Staging”
-         services = [“http://staging.lightbend.com”]
-       }
-     }
-   }
- }
- ```
+See [host header match](https://conductr.lightbend.com/docs/2.0.x/MigrationGuide#host-header-match) for more information.
 
 ### Websockets
 
