@@ -22,11 +22,11 @@
   when: agent_pkg.stat.exists == False
 
 - stat: path=conductr/files/access-token
-  register: access-token
+  register: access_token
 
 - debug: msg="!!! Required file access-token not found in conductr/files !!!"
   register: have_error
-  when: access-token.stat.exists == False
+  when: access_token.stat.exists == False
 
 - stat: path=docker/files/dockercfg
   register: dockercfg
