@@ -304,8 +304,8 @@
         region: "{{ EC2_REGION }}"
         subnets:
           - "{{ vpc.subnets[0].id }}"
+          - "{{ vpc.subnets[1].id }}"
           - "{{ vpc.subnets[2].id }}"
-          - "{{ vpc.subnets[4].id }}"
         listeners:
           # Upload a cert to use SSL
           # Example listener for Visualizer 80 -> 9999
