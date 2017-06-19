@@ -258,6 +258,19 @@
             to_port: 10999
             group_name: "{{ public_agent_sg.group_id }}"
 
+    - name: Core Nodes
+      local_action:
+        module: ec2_group
+        name: "{{ core_name }}"
+        description: "{{ core_name }}"
+        region: "{{ vpc.vpc.region }}"
+        rules:
+          # Status Server, Control Proto, and Service Locator
+          - proto: tcp
+            from_port: 9004
+            to_port: 9008
+            group_name: "{{ core_sg.group_id }}"
+
     - name: Launch Bastion Node
       local_action:
         module: ec2
