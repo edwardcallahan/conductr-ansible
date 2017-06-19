@@ -79,3 +79,5 @@ CONDUCTR_AGENT_WORK_DIR: "/tmp/conductr-agent"
 # CONDUCTR_PUBLIC_AGENT_ROLES:
 #   - haproxy
 #   - my-proxy
+# CONDUCTR_TEMPLATE_AGENT_ROLES:
+#   - web

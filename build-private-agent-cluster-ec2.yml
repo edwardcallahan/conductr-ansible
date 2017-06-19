@@ -284,6 +284,10 @@
   gather_facts: False
   sudo: True
 
+# These are the default ConductR Public Agent roles - these roles may be overridden within the VARS_FILE
+    CONDUCTR_TEMPLATE_AGENT_ROLES:
+      - web
+
   vars_files:
     - "{{ VARS_FILE }}"
 
@@ -296,7 +300,7 @@
     - include: conductr/tasks/install-agent.yml
       vars:
           CORE_OBSERVER_PRIVATE_IP: "127.0.0.1"
-          CONDUCTR_AGENT_ROLES: "{{ CONDUCTR_PUBLIC_AGENT_ROLES }}"
+          CONDUCTR_AGENT_ROLES: "{{ CONDUCTR_TEMPLATE_AGENT_ROLES }}"
     - include: bundle/tasks/config-haproxy.yml
     - include: bundle/tasks/config-elasticsearch.yml
 

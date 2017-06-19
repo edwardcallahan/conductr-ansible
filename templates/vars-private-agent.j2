@@ -63,7 +63,12 @@ CONDUCTR_AGENT_WORK_DIR: "/tmp/conductr-agent"
 # ConductR 2.*:
 # If you wish to add your own role, uncomment the following
 # In the example below, we are adding a role called `my-role`.
-# CONDUCTR_AGENT_ROLES:
+# CONDUCTR_PRIVATE_AGENT_ROLES:
 #   - web
-#   - haproxy
+#   - elasticsearch
 #   - my-role
+# CONDUCTR_PUBLIC_AGENT_ROLES:
+#   - haproxy
+#   - my-proxy
+# CONDUCTR_TEMPLATE_AGENT_ROLES:
+#   - web
