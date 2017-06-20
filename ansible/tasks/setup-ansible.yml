@@ -33,14 +33,18 @@
   become: yes
   become_method: sudo
 
-- shell: 'echo -e "[local]\n127.0.0.1" | sudo tee -a /etc/ansible/hosts'
+- shell: 'echo "[local]\n127.0.0.1" | sudo tee -a /etc/ansible/hosts'
+  become: yes
+  become_method: sudo
+
+- command: git clone git://github.com/ansible/ansible.git --recursive
+
+- command: chown -R {{ REMOTE_USER }}:{{ REMOTE_USER }} ansible
   become: yes
   become_method: sudo
 
 - command: git clone https://github.com/typesafehub/conductr-ansible.git
 
-- name: Copy ConductR
-  synchronize: src=conductr/files/{{ CONDUCTR_PKG }} dest=/home/ubuntu/conductr-ansible/conductr/files
-
-- name: Copy ConductR-Agent
-  synchronize: src=conductr/files/{{ CONDUCTR_AGENT_PKG }} dest=/home/ubuntu/conductr-ansible/conductr/files
+- command: chown -R {{ REMOTE_USER }}:{{ REMOTE_USER }} conductr-ansible
+  become: yes
+  become_method: sudo

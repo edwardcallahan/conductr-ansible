@@ -31,7 +31,7 @@
         module: ec2_vpc
         cidr_block: 10.100.0.0/16
         resource_tags:
-          Name: "Lightbend Suite Cluster VPC"
+          Name: "Lightbend Enterprise Suite Cluster VPC"
         region: "{{ EC2_REGION }}"
         dns_hostnames: yes
         dns_support: yes
@@ -358,7 +358,7 @@
    REMOTE_USER: "ubuntu"
 
   vars_files:
-    - "{{ VARS_FILE }}"
+    - "vars/{{ EC2_REGION }}_private_agent_vars.yml"
 
   tasks:
     - include: python/tasks/main.yml
@@ -366,5 +366,17 @@
     - include: ansible/tasks/setup-ansible.yml
     - include: conductr/tasks/install-cli-pip.yml
     - include: java/tasks/openjdk.yml
-    - include: docker/tasks/main.yml
     - include: system/tasks/update-ubuntu.yml
+
+# Copy to Bastion:
+# * ConductR and ConductR-Agent systemd deb files
+# * Private PEM key for nodes
+# * .dockercfg for nodes, if needed
+# * lightbend commercial-credentials
+#
+# Export to Env
+# * AWS Keys
+# * Source Ansible hacking/env-setup
+# * Disable host checking with export ANSIBLE_HOST_KEY_CHECKING=False
+#
+# Build Cluster `nohup ansible-playbook build-private-agent-cluster-ec2.yml -e "VARS_FILE=vars/{{EC2_REGION}}_vars.yml" --private-key /path/to/{{keypair}} > build_private_cluster.out &`
