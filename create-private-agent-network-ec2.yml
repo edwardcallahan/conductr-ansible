@@ -123,11 +123,6 @@
         vpc_id: "{{ vpc.vpc_id }}"
         region: "{{ vpc.vpc.region }}"
         state: present
-        rules:
-          - proto: tcp
-            from_port: 22
-            to_port: 22
-            cidr_ip: 0.0.0.0/0
       register: admin_sg
 
     - name: Create Ingress SG
@@ -138,15 +133,6 @@
         vpc_id: "{{ vpc.vpc_id }}"
         region: "{{ vpc.vpc.region }}"
         state: present
-        rules:
-          - proto: tcp
-            from_port: 80
-            to_port: 80
-            cidr_ip: 0.0.0.0/0
-          - proto: tcp
-            from_port: 443
-            to_port: 443
-            cidr_ip: 0.0.0.0/0
       register: ingress_sg
 
     - pause:
@@ -179,30 +165,38 @@
         description: "{{ core_name }}"
         vpc_id: "{{ vpc.vpc_id }}"
         region: "{{ vpc.vpc.region }}"
-        rules:
-          # Admin SSH
-          - proto: tcp
-            from_port: 22
-            to_port: 22
-            group_id: "{{ admin_sg.group_id}}"
-          # Akka Remoting, Control Protocol, Bundle Stream Server,
-          # Status Server and Service Locator
-          # From Public Agent to Core
-          - proto: tcp
-            from_port: 9004
-            to_port: 9008
-            group_id: "{{ public_agent_sg.group_id }}"
-          # Akka Remoting, Control Protocol, Bundle Stream Server,
-          # Status Server and Service Locator
-          # From Private Agent to Core
-          - proto: tcp
-            from_port: 9004
-            to_port: 9008
-            group_id: "{{ private_agent_sg.group_id }}"
         state: present
       register: core_sg
 
-    - name: Public Agents
+    - name: Admin SG Rules
+      local_action:
+        module: ec2_group
+        name: "{{ admin_name }}"
+        description: "{{ admin_name }}"
+        region: "{{ vpc.vpc.region }}"
+        rules:
+          - proto: tcp
+            from_port: 22
+            to_port: 22
+            cidr_ip: 0.0.0.0/0
+
+    - name: Ingress SG Rules
+      local_action:
+        module: ec2_group
+        name: "{{ ingress_name }}"
+        description: "{{ ingress_name }}"
+        region: "{{ vpc.vpc.region }}"
+        rules:
+          - proto: tcp
+            from_port: 80
+            to_port: 80
+            cidr_ip: 0.0.0.0/0
+          - proto: tcp
+            from_port: 443
+            to_port: 443
+            cidr_ip: 0.0.0.0/0
+
+    - name: Public Agents SG Rules
       local_action:
         module: ec2_group
         name: "{{ public_agent_name }}"
@@ -265,7 +259,22 @@
         description: "{{ core_name }}"
         region: "{{ vpc.vpc.region }}"
         rules:
+          # Admin SSH
+          - proto: tcp
+            from_port: 22
+            to_port: 22
+            group_id: "{{ admin_sg.group_id}}"
           # Status Server, Control Proto, and Service Locator
+          # Akka Remoting, Control Protocol, Bundle Stream Server,
+          # Status Server and Service Locator
+          - proto: tcp
+            from_port: 9004
+            to_port: 9008
+            group_id: "{{ public_agent_sg.group_id }}"
+          - proto: tcp
+            from_port: 9004
+            to_port: 9008
+            group_id: "{{ private_agent_sg.group_id }}"
           - proto: tcp
             from_port: 9004
             to_port: 9008
@@ -317,8 +326,8 @@
         region: "{{ EC2_REGION }}"
         subnets:
           - "{{ vpc.subnets[0].id }}"
-          - "{{ vpc.subnets[1].id }}"
           - "{{ vpc.subnets[2].id }}"
+          - "{{ vpc.subnets[4].id }}"
         listeners:
           # Upload a cert to use SSL
           # Example listener for Visualizer 80 -> 9999
@@ -372,7 +381,9 @@
 # * ConductR and ConductR-Agent systemd deb files
 # * Private PEM key for nodes
 # * .dockercfg for nodes, if needed
-# * lightbend commercial-credentials
+# * lightbend commercial.credentials
+# * access token
+# * vars file from network creation
 #
 # Export to Env
 # * AWS Keys

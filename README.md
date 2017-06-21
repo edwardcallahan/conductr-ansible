@@ -8,10 +8,16 @@ These plays and playbooks provision [Lightbend ConductR](https://conductr.lightb
 **This version of ConductR Ansible is compatible with ConductR's Master branch, currently 2.1.x.**
 For previous versions, use the corresponding branch, i.e. Conductr-Ansible 2.0.x branch for use with ConductR 2.0.x.
 
-There are two sets of cluster building plays: a simple cluster suitable for multi-node testing of clusters up to 6 or 9 nodes.
- and a private agent topology more suitable for larger clusters. For both there is a `create network` and `build cluster` play.
- The `create network` plays create a new VPC, subnets, etc and populates a variables file that is used as input to the `build cluster` play.
- The `create network` plays are optional. You can manually populate the variables file using existing network information. In such
+There are two sets of cluster building plays: an all-public cluster suitable for multi-node testing of small clusters,
+ and a private agent topology more suitable for larger, production clusters.
+ The all-public nodes topology, `create-network-ec2.yml` and `build-cluster-ec2.yml`, is recommended for those trying
+ ConductR who want the simplest multi-node cluster possible. In this mode,
+ all nodes will be assigned a public ip address and configured with all cluster roles.
+
+For both topologies there is a `create network` and `build cluster` play.
+ The optional `create network` plays create a new VPC, subnets, etc and populates a variables file that is used as input to
+ the `build cluster` play.
+ If you do not use the `create network` plays, y    ou can manually populate the variables file using existing network information. In such
  cases, be certain to note the security group and other network preparations.
 
 These plays assume that you have registered with [Lightbend.com](https://www.lightbend.com/platform/enterprise-suite/get-started-options)
@@ -37,11 +43,13 @@ Use `create-network-ec2.yml` to setup a new VPC within your EC2 account. This is
 
 The playbook `build-cluster-ec2.yml` launches a three nodes running all three functions: the core scheduler,
  the executioner agent and dynamic proxy. A fourth, small template instance is provided for imaging. This template instance can be imaged,
- if desired, and terminated. It is not part of the cluster.
+ if desired, and terminated. It is not part of the cluster and not needed by the cluster.
  It is recommended to create an image of this node before terminating it. The AMI created can be used to quickly provision a
- replacement node should one fail. Instances launched from the fully installed AMI require only minimal configuration to join this cluster.
- Be certain to review and customize the vars file before building the cluster. In addition to matching the ConductR package
- names with the version provided, the `username` and `password` in `my.commercial.properties` and the `keypair` in the generated vars file *must* be set.
+ replacement node should one fail or otherwise one wishes to provision additional nodes. Instances launched from the template node
+ AMI require only minimal configuration to join this cluster. In the case of an agent its bind address and core observer address must be set.
+
+Be certain to review and customize the vars file before building the cluster. Items to specifically check in your vars file
+ include that the ConductR package names match exactly with those in `conductr/files` and that the `keypair` name has been updated.
 
 The `create-private-agent-network-ec2.yml` playbook also configures a VPC with separate security groups for public and and private agents.
  It launches an admin bastion host for then running the build cluster playbook from. SSH on to the bastion to continue building the cluster.
@@ -270,5 +278,7 @@ The architecture created by create-network-ec2.yml utilizes three Availability Z
 ![alt tag](doc/ConductR-Ansible-EC2-2AZ-Arch.png)
 
 ### Private Agent mode
-Both the VPC creation and cluster building playbooks have 'private-agent' versions. This version is recommended for larger clusters or those wanting the increased
- security of the topology. The private agent topology is recommended for experienced operators who are building production environments.
+Both the VPC creation and cluster building playbooks have 'private-agent' versions. This version is recommended for larger clusters
+ seeking more control in resource scaling
+ or those wanting the increased security of the topology.
+ The private agent topology is recommended for experienced operators who have some familiarity with networking.
