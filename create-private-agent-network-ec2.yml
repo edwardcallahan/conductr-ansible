@@ -325,9 +325,9 @@
         cross_az_load_balancing: yes
         region: "{{ EC2_REGION }}"
         subnets:
-          - "{{ vpc.subnets[0].id }}"
-          - "{{ vpc.subnets[2].id }}"
-          - "{{ vpc.subnets[4].id }}"
+          - "Lightbend {{ EC2_REGION }}-A Public SN"
+          - "Lightbend {{ EC2_REGION }}-B Public SN"
+          - "Lightbend {{ EC2_REGION }}-C Public SN"
         listeners:
           # Upload a cert to use SSL
           # Example listener for Visualizer 80 -> 9999
