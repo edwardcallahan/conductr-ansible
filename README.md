@@ -8,28 +8,36 @@ These plays and playbooks provision [Lightbend ConductR](https://conductr.lightb
 **This version of ConductR Ansible is compatible with ConductR's Master branch, currently 2.1.x.**
 For previous versions, use the corresponding branch, i.e. Conductr-Ansible 2.0.x branch for use with ConductR 2.0.x.
 
-There are two sets of cluster building plays: an all-public cluster suitable for multi-node testing of small clusters,
- and a private agent topology more suitable for larger, production clusters.
- The all-public nodes topology, `create-network-ec2.yml` and `build-cluster-ec2.yml`, is recommended for those trying
- ConductR who want the simplest multi-node cluster possible. In this mode,
- all nodes will be assigned a public ip address and configured with all cluster roles.
+This project offers two sets of cluster building plays: a 3 node, "all-in-one" cluster with public IP addresses,
+ suitable for multi-node testing of small clusters,
+ and an advanced, "private agent" topology, more suitable for larger, production clusters.
+ The "all-in-one" node topology, `create-network-ec2.yml` and `build-cluster-ec2.yml`, is recommended for those trying
+ ConductR who want the simplest, multi-node cluster possible. In this mode all nodes will be assigned a public IP address,
+ and configured with all cluster roles: proxy, agent and scheduler.
 
-For both topologies there is a `create network` and `build cluster` play.
- The optional `create network` plays create a new VPC, subnets, etc and populates a variables file that is used as input to
+For both topologies there is a corresponding `create network` and `build cluster` play.
+ The optional `create network` plays create a new VPC, subnets, et al and populates a variables file that is used as input to
  the `build cluster` play.
- If you do not use the `create network` plays, y    ou can manually populate the variables file using existing network information. In such
- cases, be certain to note the security group and other network preparations.
+ If you do not wish to use the `create network` plays, you can manually populate a variables file using existing network information and
+ the templates provided. In such
+ cases, be certain to note the security group and other network preparations from the
+ [installation documentation](http://conductr.lightbend.com/docs/2.1.x/Install#Manual-Instructions).
 
-These plays assume that you have registered with [Lightbend.com](https://www.lightbend.com/platform/enterprise-suite/get-started-options)
- for the free, three node license. There are three ConductR roles in ConductR cluster: core scheduler, execution agent and dynamic proxy.
+The `build cluster` plays assume that you have registered with [Lightbend.com](https://www.lightbend.com/platform/enterprise-suite/get-started-options)
+ for the free, three node license. If you don't provide a valid `access-token` the plays will build a 3 node cluster, however
+ bundles will not be able to scale beyond a single instance until licensed for more agent nodes.
+
+There are three ConductR roles in ConductR cluster: core scheduler, execution agent and dynamic proxy.
  In a 3 node cluster it is recommended to run all three roles on all three nodes with each node in a different availability zone(AZ).
  This is to provide for a 2 member quorum in the event of any one AZ not being available. The proxy nodes are the ingress
  point for services. The HAProxy on these nodes is dynamically updated by the conductr-haproxy service.
  These proxy nodes are the instances used in the ELB load balancer and must be reachable by the ELB security group.
 
 For larger clusters, it is recommended to use different node images for each of these roles.
- This enables the scaling of agent nodes without scaling the number of dynamic proxy and core scheduler nodes as these
- resources generally do not need to be scaled nearly as often. Production deployments will want the additional security
+ This enables you to scale agent nodes without also scaling the number of dynamic proxy and core scheduler nodes. The scheduler
+ and proxy
+ resources do not need to be scaled as often, nor on the same schedule as worker nodes.
+ Production deployments will want the additional security
  of the private-agent model in which only the dynamic proxy nodes are given public IP addresses, keeping the ELB instances
  out of your private networks.
  The private agent model requires an administrative bastion host for managing nodes with only private IPs.
@@ -60,6 +68,7 @@ The `create-private-agent-network-ec2.yml` playbook also configures a VPC with s
 
 The `create-bastion.yml` playbook can be used to seed an administrative node into an existing subnet. This can be useful even
  when using the '3x3' model with public IPs for faster bundle management by avoiding uploading over the WAN during provisioning.
+ Note that the created bastion is a good base to help you get started however you are likely to want to customize it further for your needs.
 
 ```bash
 ansible-playbook create-bastion.yml --private-key ../.keys/Key-Pair.pem  -e "VARS_FILE=vars/my_bastion_vars.yml"

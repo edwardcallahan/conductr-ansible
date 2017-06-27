@@ -14,8 +14,8 @@ VOL_SIZE: 40
 SG: "sg-xxxxxxxx"
 SN: "subnet-xxxxxxxx"
 
-CONDUCTR_VER: "2.0.2"
-CONDUCTR_PKG: "conductr_2.1.0-systemd_all.deb"
-CONDUCTR_AGENT_PKG: "conductr-agent_2.1.0-systemd_all.deb"
+CONDUCTR_VER: "2.1.1"
+CONDUCTR_PKG: "conductr_2.1.1-systemd_all.deb"
+CONDUCTR_AGENT_PKG: "conductr-agent_2.1.1-systemd_all.deb"
 CONDUCTR_CORE_WORK_DIR: "/tmp"
 CONDUCTR_AGENT_WORK_DIR: "/tmp/conductr-agent"

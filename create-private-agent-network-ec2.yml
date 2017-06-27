@@ -377,7 +377,7 @@
     - include: java/tasks/openjdk.yml
     - include: system/tasks/update-ubuntu.yml
 
-# Copy to Bastion:
+# Copy to Bastion to complete:
 # * ConductR and ConductR-Agent systemd deb files
 # * Private PEM key for nodes
 # * .dockercfg for nodes, if needed
@@ -390,4 +390,5 @@
 # * Source Ansible hacking/env-setup
 # * Disable host checking with export ANSIBLE_HOST_KEY_CHECKING=False
 #
+# Run build cluster play from bastion
 # Build Cluster `nohup ansible-playbook build-private-agent-cluster-ec2.yml -e "VARS_FILE=vars/{{EC2_REGION}}_vars.yml" --private-key /path/to/{{keypair}} > build_private_cluster.out &`

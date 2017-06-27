@@ -1,3 +1,9 @@
 ---
-- command: "conduct load-license <<<  {{ lookup('file', 'conductr/files/access-token') }}"
+- set_fact:
+    fact_token: "{{ lookup('file', 'conductr/files/access-token') }}"
+
+- name: Load access-token
+  shell: "conduct load-license <<<  {{ fact_token }}"
+  args:
+    executable: /bin/bash
 
