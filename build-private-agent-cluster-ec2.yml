@@ -246,7 +246,7 @@
       when: "{{ INSTALL_DOCKER }} == true"
     - include: conductr/tasks/install-agent.yml
       vars:
-          CORE_OBSERVER_PRIVATE_IP: "{{ groups.seed_nodes[0] }}"
+          CORE_OBSERVER_PRIVATE_IP: "{{ groups.seeds_private[0] }}"
           CONDUCTR_AGENT_ROLES: "{{ CONDUCTR_PRIVATE_AGENT_ROLES }}"
     - include: bundle/tasks/config-elasticsearch.yml
 
@@ -273,16 +273,20 @@
     - include: haproxy/tasks/main.yml
     - include: conductr/tasks/install-agent.yml
       vars:
-          CORE_OBSERVER_PRIVATE_IP: "{{ groups.seed_nodes[0] }}"
+          CORE_OBSERVER_PRIVATE_IP: "{{ groups.seeds_private[0] }}"
           CONDUCTR_AGENT_ROLES: "{{ CONDUCTR_PUBLIC_AGENT_ROLES }}"
     - include: bundle/tasks/config-haproxy.yml
-    - include: bundle/tasks/config-elasticsearch.yml
 
 - name: Setup Template Node
   hosts: template_nodes
   user: "{{ REMOTE_USER }}"
   gather_facts: False
   sudo: True
+
+  vars:
+# These are the default ConductR Public Agent roles - these roles may be overridden within the VARS_FILE
+    CONDUCTR_TEMPLATE_AGENT_ROLES:
+      - web
 
   vars_files:
     - "{{ VARS_FILE }}"
@@ -296,9 +300,7 @@
     - include: conductr/tasks/install-agent.yml
       vars:
           CORE_OBSERVER_PRIVATE_IP: "127.0.0.1"
-          CONDUCTR_AGENT_ROLES: "{{ CONDUCTR_PUBLIC_AGENT_ROLES }}"
-    - include: bundle/tasks/config-haproxy.yml
-    - include: bundle/tasks/config-elasticsearch.yml
+          CONDUCTR_AGENT_ROLES: "{{ CONDUCTR_TEMPLATE_AGENT_ROLES }}"
 
 - name: Install Bundles from the seed node
   hosts: seeds_private
@@ -310,6 +312,7 @@
     - "{{ VARS_FILE }}"
 
   tasks:
+    - include: "conductr/tasks/install-access-token.yml"
     - include: "bundle/tasks/install-elasticsearch.yml"
     - include: "bundle/tasks/install-conductr-haproxy.yml"
     - include: "bundle/tasks/install-kibana.yml"

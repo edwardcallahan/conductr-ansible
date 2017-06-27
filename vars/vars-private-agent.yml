@@ -1,7 +1,8 @@
 ---
 # Must be set to the key pair name of the file passed to playbook
-KEYPAIR: "Key Pair Name"
-CONDUCTR_VERSION: 2.0.1
+KEYPAIR: "Set to Key Pair Name"
+CONDUCTR_VERSION: 2.1.1
+TAG_NAME: "Lightbend Suite"
 EC2_REGION: "us-east-1"
 EC2_AZ_1: a
 EC2_AZ_2: b
@@ -18,10 +19,10 @@ AGENT_USER: "conductr-agent"
 # Must be changed to region local Ubuntu AMI for all other regions
 #
 
-CORE_IMAGE: "ami-6edd3078"
-PRIVATE_AGENT_IMAGE: "ami-6edd3078"
-PUBLIC_AGENT_IMAGE: "ami-6edd3078"
-TEMPLATE_IMAGE: "ami-6edd3078"
+CORE_IMAGE: "ami-20631a36"
+PRIVATE_AGENT_IMAGE: "ami-20631a36"
+PUBLIC_AGENT_IMAGE: "ami-20631a36"
+TEMPLATE_IMAGE: "ami-20631a36"
 
 CORE_INSTANCE_TYPE: "t2.large"
 CORE_VOL_TYPE: "gp2"
@@ -48,24 +49,23 @@ PRVIATE_AGENT_SG: "{{ admin_sg.group_id }}"
 
 AZ_PUBLIC_1: "{{ vpc.subnets[0].az }}"
 SN_PUBLIC_1: "{{ vpc.subnets[0].id }}"
-AZ_PRIVATE_1: "{{ vpc.subnets[1].az }}"
-SN_PRIVATE_1: "{{ vpc.subnets[1].id }}"
-AZ_PUBLIC_2: "{{ vpc.subnets[2].az }}"
-SN_PUBLIC_2: "{{ vpc.subnets[2].id }}"
-AZ_PRIVATE_2: "{{ vpc.subnets[3].az }}"
-SN_PRIVATE_2: "{{ vpc.subnets[3].id }}"
-AZ_PUBLIC_3: "{{ vpc.subnets[4].az }}"
-SN_PUBLIC_3: "{{ vpc.subnets[4].id }}"
-AZ_PRIVATE_3: "{{ vpc.subnets[5].az }}"
-SN_PRIVATE_3: "{{ vpc.subnets[5].id }}"
+AZ_PRIVATE_1: "{{ private_SN_A.subnet.availability_zone }}"
+SN_PRIVATE_1: "{{ private_SN_A.subnet.id }}"
+AZ_PUBLIC_2: "{{ vpc.subnets[1].az }}"
+SN_PUBLIC_2: "{{ vpc.subnets[1].id }}"
+AZ_PRIVATE_2: "{{ private_SN_B.subnet.availability_zone }}"
+SN_PRIVATE_2: "{{ private_SN_B.subnet.id }}"
+AZ_PUBLIC_3: "{{ vpc.subnets[2].az }}"
+SN_PUBLIC_3: "{{ vpc.subnets[2].id }}"
+AZ_PRIVATE_3: "{{ private_SN_C.subnet.availability_zone }}"
+SN_PRIVATE_3: "{{ private_SN_C.subnet.id }}"
 
 
 ELB_NAME: "Lightbend Suite ELB {{ EC2_REGION }}"
-TAG_NAME: "Lightbend Suite"
 COMMERCIAL_CREDENTIALS: "my.commercial.credentials"
-CONDUCTR_PKG: "conductr_2.0.1-systemd_all.deb"
+CONDUCTR_PKG: "conductr_2.1.1-systemd_all.deb"
 CONDUCTR_CORE_WORK_DIR: "/tmp"
-CONDUCTR_AGENT_PKG: "conductr-agent_2.0.1-systemd_all.deb"
+CONDUCTR_AGENT_PKG: "conductr-agent_2.1.1-systemd_all.deb"
 CONDUCTR_AGENT_WORK_DIR: "/tmp/conductr-agent"
 
 # ConductR 2.*:
@@ -79,3 +79,5 @@ CONDUCTR_AGENT_WORK_DIR: "/tmp/conductr-agent"
 # CONDUCTR_PUBLIC_AGENT_ROLES:
 #   - haproxy
 #   - my-proxy
+# CONDUCTR_TEMPLATE_AGENT_ROLES:
+#   - web

@@ -14,7 +14,7 @@
 # Must be changed to region local Ubuntu AMI for all other regions
 #
   vars:
-    BASTION_IMAGE: "ami-80861296"
+    BASTION_IMAGE: "ami-20631a36"
     BASTION_INSTANCE_TYPE: "t2.large"
     BASTION_VOL_TYPE: "gp2"
     BASTION_VOL_SIZE: 100
@@ -31,7 +31,7 @@
         module: ec2_vpc
         cidr_block: 10.100.0.0/16
         resource_tags:
-          Name: "Lightbend Suite Cluster VPC"
+          Name: "Lightbend Enterprise Suite Cluster VPC"
         region: "{{ EC2_REGION }}"
         dns_hostnames: yes
         dns_support: yes
@@ -39,11 +39,8 @@
         route_tables:
           - subnets:
               - 10.100.1.0/24
-              - 10.100.2.0/24
               - 10.100.3.0/24
-              - 10.100.4.0/24
               - 10.100.5.0/24
-              - 10.100.6.0/24
             routes:
               - dest: 0.0.0.0/0
                 gw: igw
@@ -52,29 +49,71 @@
             az: "{{ EC2_REGION }}a"
             resource_tags:
                Name: "Lightbend {{ EC2_REGION }}-A Public SN"
-          - cidr: 10.100.2.0/24
-            az: "{{ EC2_REGION }}a"
-            resource_tags:
-                Name: "Lightbend {{ EC2_REGION }}-A Private SN"
           - cidr: 10.100.3.0/24
             az: "{{ EC2_REGION }}b"
             resource_tags:
                 Name: "Lightbend {{ EC2_REGION }}-B Public SN"
-          - cidr: 10.100.4.0/24
-            az: "{{ EC2_REGION }}b"
-            resource_tags:
-               Name: "Lightbend {{ EC2_REGION }}-B Private SN"
             # Use 'a' or 'b' again for 2 AZs
           - cidr: 10.100.5.0/24
             az: "{{ EC2_REGION }}c"
             resource_tags:
                 Name: "Lightbend {{ EC2_REGION }}-C Public SN"
-          - cidr: 10.100.6.0/24
-            az: "{{ EC2_REGION }}c"
-            resource_tags:
-                Name: "Lightbend {{ EC2_REGION }}-C Private SN"
         state: present
       register: vpc
+
+    - name: Create NAT Gateway
+      ec2_vpc_nat_gateway:
+        state: present
+        subnet_id:  "{{ vpc.subnets[0].id }}"
+        wait: yes
+        region: "{{ EC2_REGION }}"
+        if_exist_do_not_create: true
+      register: nat_gateway
+
+    - name: Create Private Subnets
+      ec2_vpc_subnet:
+        state: present
+        vpc_id: "{{ vpc.vpc_id }}"
+        region: "{{ EC2_REGION }}"
+        cidr: 10.100.2.0/24
+        az: "{{ EC2_REGION }}a"
+        resource_tags:
+          Name: "Lightbend {{ EC2_REGION }}-A Private SN"
+      register: private_SN_A
+
+    - name: Create Private Subnet
+      ec2_vpc_subnet:
+        state: present
+        vpc_id: "{{ vpc.vpc_id }}"
+        region: "{{ EC2_REGION }}"
+        cidr: 10.100.4.0/24
+        az: "{{ EC2_REGION }}b"
+        resource_tags:
+          Name: "Lightbend {{ EC2_REGION }}-B Private SN"
+      register: private_SN_B
+
+    - name: Create Private Subnets
+      ec2_vpc_subnet:
+        state: present
+        vpc_id: "{{ vpc.vpc_id }}"
+        region: "{{ EC2_REGION }}"
+        cidr: 10.100.6.0/24
+        az: "{{ EC2_REGION }}c"
+        resource_tags:
+          Name: "Lightbend {{ EC2_REGION }}-C Private SN"
+      register: private_SN_C
+
+    - name: Set up NAT-protected route table
+      ec2_vpc_route_table:
+        vpc_id: "{{ vpc.vpc_id }}"
+        region: "{{ EC2_REGION }}"
+        subnets:
+          - "Lightbend {{ EC2_REGION }}-A Private SN"
+          - "Lightbend {{ EC2_REGION }}-B Private SN"
+          - "Lightbend {{ EC2_REGION }}-C Private SN"
+        routes:
+          - dest: 0.0.0.0/0
+            gateway_id: "{{ nat_gateway.nat_gateway_id}}"
 
     - name: Create Admin SG
       local_action:
@@ -84,11 +123,6 @@
         vpc_id: "{{ vpc.vpc_id }}"
         region: "{{ vpc.vpc.region }}"
         state: present
-        rules:
-          - proto: tcp
-            from_port: 22
-            to_port: 22
-            cidr_ip: 0.0.0.0/0
       register: admin_sg
 
     - name: Create Ingress SG
@@ -99,15 +133,6 @@
         vpc_id: "{{ vpc.vpc_id }}"
         region: "{{ vpc.vpc.region }}"
         state: present
-        rules:
-          - proto: tcp
-            from_port: 80
-            to_port: 80
-            cidr_ip: 0.0.0.0/0
-          - proto: tcp
-            from_port: 443
-            to_port: 443
-            cidr_ip: 0.0.0.0/0
       register: ingress_sg
 
     - pause:
@@ -121,23 +146,6 @@
         description: "{{ public_agent_name }}"
         vpc_id: "{{ vpc.vpc_id }}"
         region: "{{ vpc.vpc.region }}"
-        rules:
-          # HTTP application endpoints
-          - proto: tcp
-            from_port: 9000
-            to_port: 9000
-            group_id: "{{ ingress_sg.group_id }}"
-          # ELB health check
-          - proto: tcp
-            from_port: 9009
-            to_port: 9009
-            group_id: "{{ ingress_sg.group_id }}"
-          # Visualizer
-          - proto: tcp
-            from_port: 9999
-            to_port: 9999
-            group_id: "{{ ingress_sg.group_id }}"
-        state: present
       register: public_agent_sg
 
     - name: Create Private Agent SG
@@ -147,12 +155,6 @@
         description: "{{ private_agent_name }}"
         vpc_id: "{{ vpc.vpc_id }}"
         region: "{{ vpc.vpc.region }}"
-        rules:
-          # Proxy access from ConductR public agents
-          - proto: tcp
-            from_port: 10000
-            to_port: 10999
-            group_name: "{{ public_agent_sg.group_id }}"
         state: present
       register: private_agent_sg
 
@@ -163,83 +165,120 @@
         description: "{{ core_name }}"
         vpc_id: "{{ vpc.vpc_id }}"
         region: "{{ vpc.vpc.region }}"
-        rules:
-          # Akka Remoting, Control Protocol, Bundle Stream Server,
-          # Status Server and Service Locator
-          # From Public Agent to Core
-          - proto: tcp
-            from_port: 9004
-            to_port: 9008
-            group_id: "{{ public_agent_sg.group_id }}"
-          # Akka Remoting, Control Protocol, Bundle Stream Server,
-          # Status Server and Service Locator
-          # From Private Agent to Core
-          - proto: tcp
-            from_port: 9004
-            to_port: 9008
-            group_id: "{{ private_agent_sg.group_id }}"
         state: present
       register: core_sg
 
-    - name: Admin SSH Core Nodes
+    - name: Admin SG Rules
+      local_action:
+        module: ec2_group
+        name: "{{ admin_name }}"
+        description: "{{ admin_name }}"
+        region: "{{ vpc.vpc.region }}"
+        rules:
+          - proto: tcp
+            from_port: 22
+            to_port: 22
+            cidr_ip: 0.0.0.0/0
+
+    - name: Ingress SG Rules
+      local_action:
+        module: ec2_group
+        name: "{{ ingress_name }}"
+        description: "{{ ingress_name }}"
+        region: "{{ vpc.vpc.region }}"
+        rules:
+          - proto: tcp
+            from_port: 80
+            to_port: 80
+            cidr_ip: 0.0.0.0/0
+          - proto: tcp
+            from_port: 443
+            to_port: 443
+            cidr_ip: 0.0.0.0/0
+
+    - name: Public Agents SG Rules
+      local_action:
+        module: ec2_group
+        name: "{{ public_agent_name }}"
+        description: "{{ public_agent_name }}"
+        region: "{{ vpc.vpc.region }}"
+        rules:
+          # Admin SSH
+          - proto: tcp
+            from_port: 22
+            to_port: 22
+            group_id: "{{ admin_sg.group_id}}"
+          # Remoting
+          - proto: tcp
+            from_port: 2552
+            to_port: 2552
+            group_id: "{{ core_sg.group_id}}"
+          # ELB health check
+          - proto: tcp
+            from_port: 9009
+            to_port: 9009
+            group_id: "{{ ingress_sg.group_id }}"
+          # Visualizer
+          - proto: tcp
+            from_port: 9999
+            to_port: 9999
+            group_id: "{{ ingress_sg.group_id }}"
+
+    - name: Private Agents
+      local_action:
+        module: ec2_group
+        name: "{{ private_agent_name }}"
+        description: "{{ private_agent_name }}"
+        region: "{{ vpc.vpc.region }}"
+        rules:
+          # Admin SSH
+          - proto: tcp
+            from_port: 22
+            to_port: 22
+            group_id: "{{ admin_sg.group_id}}"
+          # Akka Remoting
+          - proto: tcp
+            from_port: 2552
+            to_port: 2552
+            group_id: "{{ core_sg.group_id}}"
+          # Proxy access
+          - proto: tcp
+            from_port: 10000
+            to_port: 10999
+            group_name: "{{ core_sg.group_id }}"
+          # Proxy access from ConductR public agents
+          - proto: tcp
+            from_port: 10000
+            to_port: 10999
+            group_name: "{{ public_agent_sg.group_id }}"
+
+    - name: Core Nodes
       local_action:
         module: ec2_group
         name: "{{ core_name }}"
         description: "{{ core_name }}"
         region: "{{ vpc.vpc.region }}"
         rules:
+          # Admin SSH
           - proto: tcp
             from_port: 22
             to_port: 22
             group_id: "{{ admin_sg.group_id}}"
-
-    - name: Akka Remoting Private Agents
-      local_action:
-        module: ec2_group
-        name: "{{ private_agent_name }}"
-        description: "{{ private_agent_name }}"
-        region: "{{ vpc.vpc.region }}"
-        rules:
+          # Status Server, Control Proto, and Service Locator
+          # Akka Remoting, Control Protocol, Bundle Stream Server,
+          # Status Server and Service Locator
           - proto: tcp
-            from_port: 2552
-            to_port: 2552
-            group_id: "{{ core_sg.group_id}}"
-
-    - name: Admin SSH Private Agents
-      local_action:
-        module: ec2_group
-        name: "{{ private_agent_name }}"
-        description: "{{ private_agent_name }}"
-        region: "{{ vpc.vpc.region }}"
-        rules:
+            from_port: 9004
+            to_port: 9008
+            group_id: "{{ public_agent_sg.group_id }}"
           - proto: tcp
-            from_port: 22
-            to_port: 22
-            group_id: "{{ admin_sg.group_id}}"
-
-    - name: Akka Remoting Public Agents
-      local_action:
-        module: ec2_group
-        name: "{{ public_agent_name }}"
-        description: "{{ public_agent_name }}"
-        region: "{{ vpc.vpc.region }}"
-        rules:
+            from_port: 9004
+            to_port: 9008
+            group_id: "{{ private_agent_sg.group_id }}"
           - proto: tcp
-            from_port: 2552
-            to_port: 2552
-            group_id: "{{ core_sg.group_id}}"
-
-    - name: Admin SSH Public Agents
-      local_action:
-        module: ec2_group
-        name: "{{ public_agent_name }}"
-        description: "{{ public_agent_name }}"
-        region: "{{ vpc.vpc.region }}"
-        rules:
-          - proto: tcp
-            from_port: 22
-            to_port: 22
-            group_id: "{{ admin_sg.group_id}}"
+            from_port: 9004
+            to_port: 9008
+            group_name: "{{ core_sg.group_id }}"
 
     - name: Launch Bastion Node
       local_action:
@@ -287,8 +326,8 @@
         region: "{{ EC2_REGION }}"
         subnets:
           - "{{ vpc.subnets[0].id }}"
+          - "{{ vpc.subnets[1].id }}"
           - "{{ vpc.subnets[2].id }}"
-          - "{{ vpc.subnets[4].id }}"
         listeners:
           # Upload a cert to use SSL
           # Example listener for Visualizer 80 -> 9999
@@ -327,11 +366,29 @@
   vars:
    REMOTE_USER: "ubuntu"
 
+  vars_files:
+    - "vars/{{ EC2_REGION }}_private_agent_vars.yml"
+
   tasks:
     - include: python/tasks/main.yml
     - include: ntp/tasks/main.yml
     - include: ansible/tasks/setup-ansible.yml
     - include: conductr/tasks/install-cli-pip.yml
     - include: java/tasks/openjdk.yml
-    - include: docker/tasks/main.yml
     - include: system/tasks/update-ubuntu.yml
+
+# Copy to Bastion to complete:
+# * ConductR and ConductR-Agent systemd deb files
+# * Private PEM key for nodes
+# * .dockercfg for nodes, if needed
+# * lightbend commercial.credentials
+# * access token
+# * vars file from network creation
+#
+# Export to Env
+# * AWS Keys
+# * Source Ansible hacking/env-setup
+# * Disable host checking with export ANSIBLE_HOST_KEY_CHECKING=False
+#
+# Run build cluster play from bastion
+# Build Cluster `nohup ansible-playbook build-private-agent-cluster-ec2.yml -e "VARS_FILE=vars/{{EC2_REGION}}_vars.yml" --private-key /path/to/{{keypair}} > build_private_cluster.out &`

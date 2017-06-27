@@ -21,6 +21,20 @@
   register: have_error
   when: agent_pkg.stat.exists == False
 
+- stat: path=conductr/files/access-token
+  register: access_token
+
+- debug: msg="!!! Required file access-token not found in conductr/files !!!"
+  register: have_error
+  when: access_token.stat.exists == False
+
+- stat: path=docker/files/dockercfg
+  register: dockercfg
+
+- debug: msg="!!! Required file dockercfg not found in conductr/files !!!"
+  register: have_error
+  when: dockercfg.stat.exists == False
+
 - pause:
     seconds: 15
   when: have_error is defined

@@ -6,7 +6,7 @@ EC2_REGION: "us-east-1"
 REMOTE_USER: "ubuntu"
 # This image is Ubuntu 16.04 LTS amd64 hvm:ebs-ssd in us-east-1
 # Must be changed to region local Ubuntu AMI for all other regions
-BASTION_IMAGE: "ami-80861296"
+BASTION_IMAGE: "ami-20631a36"
 BASTION_INSTANCE_TYPE: "t2.large"
 BASTION_VOL_TYPE: "gp2"
 BASTION_VOL_SIZE: 100
@@ -15,5 +15,5 @@ BASTION_SG: "sg-xxxxxxxx"
 BASTION_SG: "subnet-xxxxxxxx"
 
 COMMERCIAL_CREDENTIALS: "my.commercial.credentials"
-CONDUCTR_PKG: "conductr_2.0.1-systemd_all.deb"
-CONDUCTR_AGENT_PKG: "conductr-agent_2.0.1-systemd_all.deb"
+CONDUCTR_PKG: "conductr_2.1.1-systemd_all.deb"
+CONDUCTR_AGENT_PKG: "conductr-agent_2.1.1-systemd_all.deb"
