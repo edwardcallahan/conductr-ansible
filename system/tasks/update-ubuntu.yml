@@ -13,6 +13,8 @@
   register: file
   stat: path=/var/run/reboot-required get_md5=no
 
+- debug: msg="Rebooting system. This will end the play"
+
 - name: Reboot the server
   command: /sbin/reboot
   when: file.stat.exists == true
