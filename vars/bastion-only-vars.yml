@@ -15,5 +15,5 @@ BASTION_SG: "sg-xxxxxxxx"
 BASTION_SG: "subnet-xxxxxxxx"
 
 COMMERCIAL_CREDENTIALS: "my.commercial.credentials"
-CONDUCTR_PKG: "conductr_2.1.1-systemd_all.deb"
-CONDUCTR_AGENT_PKG: "conductr-agent_2.1.1-systemd_all.deb"
+CONDUCTR_PKG: "conductr_2.1.3-systemd_all.deb"
+CONDUCTR_AGENT_PKG: "conductr-agent_2.1.3-systemd_all.deb"
