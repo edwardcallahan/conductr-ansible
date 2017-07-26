@@ -18,8 +18,8 @@ AGENT_USER: "conductr-agent"
 #
 # Must be changed to region local Ubuntu AMI for all other regions
 #
-NODE_IMAGE: "ami-20631a36"
-TEMPLATE_IMAGE: "ami-20631a36"
+NODE_IMAGE: "ami-cd0f5cb6"
+TEMPLATE_IMAGE: "ami-cd0f5cb6"
 
 REMOTE_USER: "ubuntu"
 

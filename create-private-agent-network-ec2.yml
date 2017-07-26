@@ -14,7 +14,7 @@
 # Must be changed to region local Ubuntu AMI for all other regions
 #
   vars:
-    BASTION_IMAGE: "ami-20631a36"
+    BASTION_IMAGE: "ami-cd0f5cb6"
     BASTION_INSTANCE_TYPE: "t2.large"
     BASTION_VOL_TYPE: "gp2"
     BASTION_VOL_SIZE: 100
