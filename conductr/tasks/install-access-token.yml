@@ -1,9 +1,12 @@
 ---
+- shell: "hostname -i"
+  register: host_ip
+
 - set_fact:
     fact_token: "{{ lookup('file', 'conductr/files/access-token') }}"
 
 - name: Load access-token
-  shell: "conduct load-license <<<  {{ fact_token }}"
+  shell: "conduct load-license --ip {{ host_ip.stdout}} <<<  {{ fact_token }}"
   args:
     executable: /bin/bash
 
